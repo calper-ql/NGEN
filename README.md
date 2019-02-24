@@ -32,7 +32,7 @@ Inputs and outputs can be created and the module will override the calculate fun
 
 The computation library used for this project is 
 [CuPy](https://cupy.chainer.org/) 
-
+![Cupy](https://raw.githubusercontent.com/cupy/cupy/master/docs/image/cupy_logo_1000px.png)
 However this can be quickly swapped with regular 
 [numpy](http://www.numpy.org/). How to do so will be explained soon.
 
