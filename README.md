@@ -11,7 +11,11 @@ NGEN has the following components:
 
 (Following capture is from an early development phase and will be updated when full functionality is implemented)
 
-![Imgur](https://i.imgur.com/KgGaXmi.gif)
+
+<video controls="controls">
+  <source type="video/mp4" src="https://i.imgur.com/oZtHaPz.mp4"></source>
+  <p>Your browser does not support the video element.</p>
+</video>
 
 # Module
 A module is a base class that wraps a set of inputs and outputs. Here is a simple module:
