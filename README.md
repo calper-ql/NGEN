@@ -11,7 +11,9 @@ NGEN has the following components:
 
 (Following capture is from an early development phase and will be updated when full functionality is implemented)
 
-![Imgur](https://i.imgur.com/KgGaXmi.gif)
+<video preload="auto" autoplay="autoplay" loop="loop">
+    <source src="https://i.imgur.com/oZtHaPz.mp4" type="video/mp4"></source>
+</video>
 
 # Module
 A module is a base class that wraps a set of inputs and outputs. Here is a simple module:
@@ -32,7 +34,9 @@ Inputs and outputs can be created and the module will override the calculate fun
 
 The computation library used for this project is 
 [CuPy](https://cupy.chainer.org/) 
-![CuPy_img](https://cupy.chainer.org/images/cupy.png)
+<p align="center">
+<img src="https://cupy.chainer.org/images/cupy.png" style="background-color:#000000;" >
+</p>
 
 However this can be quickly swapped with regular 
 [numpy](http://www.numpy.org/). How to do so will be explained soon.
