@@ -11,7 +11,7 @@ NGEN has the following components:
 
 (Following capture is from an early development phase and will be updated when full functionality is implemented)
 
-![Imgur](https://i.imgur.com/KgGaXmi.gifv)
+![Imgur](https://i.imgur.com/KgGaXmi.gif)
 
 # Module
 A module is a base class that wraps a set of inputs and outputs. Here is a simple module:
