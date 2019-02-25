@@ -325,6 +325,7 @@ class MinMaxValueBox:
             self.callback()
         self.mod.update()
 
+
 class Slider:
     def __init__(self, mod, x, y, size, low=0, high=100, type='float', value_pos=None):
         self.mod = mod

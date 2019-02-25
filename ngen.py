@@ -25,11 +25,18 @@ g_randomVectors = cp.array(g_randomVectors)
 #print(cp.mean(g_randomVectors))
 
 def int_value_noise_3d(x, y, z, seed):
+    x = x.astype(int)
+    y = y.astype(int)
+    z = z.astype(int)
     c = (__BN_X_NOISE_GEN * x) + (__BN_Y_NOISE_GEN * y) + (__BN_Z_NOISE_GEN * z) + __BN_SEED_NOISE_GEN * seed
     c = cp.bitwise_and(c, 0x7fffffff)
-    c = cp.bitwise_or(cp.right_shift(c, 13), c)
+    c = cp.bitwise_xor(cp.right_shift(c, 13), c)
     c = cp.bitwise_and((c * (c * c * 60493 + 19990303) + 1376312589), 0x7fffffff)
     return c
+
+
+def value_noise_3d(icp, seed):
+    return 1.0 - int_value_noise_3d(icp[..., 0], icp[..., 1], icp[..., 2], seed) / 1073741824.0
 
 
 def __NGEN_SCurve5(a):
@@ -132,8 +139,8 @@ def value_coherent_noise_3d(icp, seed):
     """
     if icp.shape[-1] != 3:
         raise ValueError("value_coherent_noise_3d icput shape does not fit the 3d description: " + str(icp.shape))
-    if icp.dtype != cp.float32 and icp.dtype != cp.float64:
-        raise ValueError("value_coherent_noise_3d icput type is not f32 or f64: " + str(icp.dtype))
+    if icp.dtype != cp.float32 and icp.dtype != cp.float64 and icp.dtype != cp.int:
+        raise ValueError("value_coherent_noise_3d icput type is not f32 or f64 or int: " + str(icp.dtype))
     if not isinstance(seed, int):
         raise ValueError("value_coherent_noise_3d seed is not an int")
 
@@ -141,12 +148,13 @@ def value_coherent_noise_3d(icp, seed):
     y = icp[..., 1]
     z = icp[..., 2]
 
-    x0 = cp.array(x, dtype=int)
-    x0[x0 < 0] -= 1
-    y0 = cp.array(y, dtype=int)
-    y0[y0 < 0] -= 1
-    z0 = cp.array(z, dtype=int)
-    z0[z0 < 0] -= 1
+    icp_int = icp
+    icp_int = icp.astype(int)
+    icp_int[icp <= 0.0] = (icp_int - 1)[icp <= 0.0]
+
+    x0 = icp_int[..., 0]
+    y0 = icp_int[..., 1]
+    z0 = icp_int[..., 2]
 
     x1 = x0 + 1
     y1 = y0 + 1
@@ -206,7 +214,7 @@ def perlin(func, icp, seed, octaves, frequency=1.0, lacunarity=2.0, persistance=
     return value
 
 
-def rigged_multi(func, icp, seed, octaves, frequency=1.0, lacunarity=2.0, exp=-1.0, gain=2.0):
+def rigged_multi(func, icp, seed, octaves, frequency=1.0, lacunarity=2.0, exp=-1.0, gain=2.0, offset=1.0):
     val_shape = np.array(icp.shape)
     val_shape = val_shape[0:-1]
     value = cp.zeros(val_shape)
@@ -214,7 +222,6 @@ def rigged_multi(func, icp, seed, octaves, frequency=1.0, lacunarity=2.0, exp=-1
     icp_f = frequency * icp
 
     weight = 1.0
-    offset = 1.0
 
     spectral_weights = []
 
@@ -243,6 +250,69 @@ def rigged_multi(func, icp, seed, octaves, frequency=1.0, lacunarity=2.0, exp=-1
         icp_f *= lacunarity
 
     return value
+
+
+def voronoi(func, icp, seed, frequency=1.0, displacement=1.0, distance_enabled=False):
+    val_shape = np.array(icp.shape)
+    val_shape = val_shape[0:-1]
+    value = None
+
+    icp_f = frequency * icp
+
+    icp_int = icp_f
+    icp_int = icp_f.astype(int)
+    icp_int[icp_f <= 0.0] = (icp_int - 1)[icp_f <= 0.0]
+    temp = icp_int.copy()
+
+    xInt = icp_int[..., 0]
+    yInt = icp_int[..., 1]
+    zInt = icp_int[..., 2]
+
+    xc = cp.zeros(xInt.shape)
+    yc = cp.zeros(yInt.shape)
+    zc = cp.zeros(zInt.shape)
+
+    minDist = cp.ones(val_shape) * 2147483647.0
+
+    for xi in range(-2, 3):
+        for yi in range(-2, 3):
+            for zi in range(-2, 3):
+                xcur = xInt + xi
+                ycur = yInt + yi
+                zcur = zInt + zi
+
+                temp[..., 0] = xcur
+                temp[..., 1] = ycur
+                temp[..., 2] = zcur
+
+                xp = xcur + func(temp, seed=seed)
+                yp = ycur + func(temp, seed=seed+1)
+                zp = zcur + func(temp, seed=seed+2)
+
+                xd = xp - icp_f[..., 0]
+                yd = yp - icp_f[..., 1]
+                zd = zp - icp_f[..., 2]
+
+                dist = xd * xd + yd * yd + zd * zd
+
+                xc[dist < minDist] = xp[dist < minDist]
+                yc[dist < minDist] = yp[dist < minDist]
+                zc[dist < minDist] = zp[dist < minDist]
+                minDist[dist < minDist] = dist[dist < minDist]
+    
+    if distance_enabled:
+        xd = xc - icp_f[..., 0]
+        yd = yc - icp_f[..., 1]
+        zd = zc - icp_f[..., 2]
+        value = cp.sqrt(xd * xd + yd * yd + zd * zd) * 1.7320508075688772935 - 1.0
+    else:
+        value = 0.0
+    
+    temp[..., 0] = cp.floor(xc)
+    temp[..., 1] = cp.floor(yc)
+    temp[..., 2] = cp.floor(zc)
+
+    return value + displacement * func(temp, seed=0)
 
 
 
@@ -280,6 +350,19 @@ if __name__=='__main__':
     print(cp.max(y))
     print(cp.min(y))
     y = scale(y)
+    
+
+    cv2.imshow("y", cp.asnumpy(y))
+    cv2.waitKey()
+
+
+    y = voronoi(value_noise_3d, x, 44, frequency=100.0, distance_enabled=True)
+    #x1 = create_point_grid([0, 0, 0], [0.5*100, 0, 0], [0.5*100, 1*100, 0], [0, 1*100, 0], 2000, 1000)
+    #y = value_noise_3d(x1, 44)
+    print(cp.max(y))
+    print(cp.min(y))
+    y = scale(y)
+    
 
     cv2.imshow("y", cp.asnumpy(y))
     cv2.waitKey()

@@ -135,7 +135,7 @@ class ModularNoiseGUI():
 if __name__=='__main__':
 
     import cv2
-    x = create_point_grid([0, 0, 0], [0.5, 0, 0], [0.5, 1, 0], [0, 1, 0], 500, 250)
+    x = create_point_grid([0, 0, 0], [1.0, 0, 0], [1.0, 1, 0], [0, 1, 0], 1000, 1000)
 
     def cb(y):
         if y is not None:
