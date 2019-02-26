@@ -351,10 +351,8 @@ if __name__=='__main__':
     print(cp.min(y))
     y = scale(y)
     
-
     cv2.imshow("y", cp.asnumpy(y))
     cv2.waitKey()
-
 
     y = voronoi(value_noise_3d, x, 44, frequency=100.0, distance_enabled=True)
     #x1 = create_point_grid([0, 0, 0], [0.5*100, 0, 0], [0.5*100, 1*100, 0], [0, 1*100, 0], 2000, 1000)

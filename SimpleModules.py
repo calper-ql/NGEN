@@ -282,3 +282,63 @@ class SelectModuleController(ModuleController):
 
 
 selection_panel_module_info.append(["Select", SelectModuleController, "System 12 bold"])
+
+
+class VoronoiModule(Module):
+    def __init__(self, id):
+        Module.__init__(self, id)
+        self.output = Output(self)
+        self.seed = 42
+        self.frequency = 1.0
+        self.displacement = 1.0
+        self.distance_enabled = False
+
+    def calculate(self, arg):
+        return voronoi(value_noise_3d, arg, self.seed, 
+            frequency=self.frequency, 
+            displacement=self.displacement, 
+            distance_enabled=self.distance_enabled)
+
+
+class VoronoiModuleController(ModuleController):
+    def __init__(self, mp):
+        ModuleController.__init__(self, mp, 250, 130)
+        self.module = VoronoiModule(mp.get_id())
+        self.AC = IOController(mp, self, self.module.output, [100+70+50, 10])
+        self.mp = mp
+        self.items = []
+        self.text = mp.canvas.create_text(40, 20, text="VORONOI", font="System 15 bold")
+        self.register_move(self.text)
+        self.seed_box = IntegerValueBox(self, self.module.seed, [100, 50])
+        self.seed_box_text = mp.canvas.create_text(30, 40, text="SEED", font="System 15 bold")
+        self.disp_box = CheckBox(self, [200, 40])
+        self.disp_box_text = mp.canvas.create_text(140+30, 50, text="DISP", font="System 15 bold")
+        self.frequency_slider = Slider(self, 60, 50+30, 140, value_pos=100+70)
+        self.frequency_slider_text = mp.canvas.create_text(30, 50+30, text="FREQ", font="System 15 bold")
+        self.frequency_slider.set_range(0.1, self.module.frequency, 10.0)
+        self.disp_slider = Slider(self, 60, 50+60, 140, value_pos=100+70)
+        self.disp_slider_text = mp.canvas.create_text(30, 50+60, text="DISP", font="System 15 bold")
+        self.disp_slider.set_range(0.0, self.module.frequency, 3.0)
+
+    def coords(self, x, y):
+        ModuleController.coords(self, x, y)
+        self.mp.canvas.coords(self.text, x+40, y+20)
+        self.AC.coords(x, y)
+        self.seed_box.coords(x, y)
+        self.mp.canvas.coords(self.seed_box_text, x+30, y+50)
+        self.disp_box.coords(x, y)
+        self.mp.canvas.coords(self.disp_box_text, x+140+30, y+50)
+        self.frequency_slider.coords(x, y)
+        self.mp.canvas.coords(self.frequency_slider_text, x+30, y+50+30)
+        self.disp_slider.coords(x, y)
+        self.mp.canvas.coords(self.disp_slider_text, x+30, y+50+60)
+
+
+    def update(self):
+        self.module.seed = self.seed_box.value
+        self.module.distance_enabled = self.disp_box.value
+        self.module.frequency = self.frequency_slider.value
+        self.module.displacement = self.disp_slider.value
+        self.mp.value_update()
+
+selection_panel_module_info.append(["Voronoi", VoronoiModuleController, "System 12 bold"])

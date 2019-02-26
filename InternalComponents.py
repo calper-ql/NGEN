@@ -262,6 +262,54 @@ class IntegerValueBox:
             self.callback()
         self.mod.update()
 
+class CheckBox:
+    def __init__(self, mod, xy):
+        self.mp = mod.mp
+        self.mod = mod
+        self.x = xy[0]
+        self.y = xy[1]
+        x = self.x
+        y = self.y
+        self.base = self.mp.canvas.create_rectangle(self.x, self.y, self.x+20, self.y+20, fill="blue")
+        self.mp.canvas.tag_bind(self.base, "<ButtonPress-1>", self.click)
+        self.last_x = 0
+        self.last_y = 9
+        self.value = False
+        self.line1 = None
+        self.line2 = None
+
+    def create_lines(self):
+        if self.line1 is None:
+            x = self.last_x
+            y = self.last_y
+            self.line1 = self.mp.canvas.create_line(x, y, x+20, y+20, fill="white", dash=(4, 4))
+            self.line2 = self.mp.canvas.create_line(x, y+20, x+20, y, fill="white", dash=(4, 4))
+
+    def click(self, event):
+        self.set_value(not self.value)
+        
+    def set_value(self, value):
+        self.value = value
+        if self.value:
+            self.create_lines()
+            self.mp.canvas.itemconfig(self.base, fill="green")
+        else:
+            self.mp.canvas.delete(self.line1)
+            self.mp.canvas.delete(self.line2)
+            self.line1 = None
+            self.line2 = None
+            self.mp.canvas.itemconfig(self.base, fill="blue")
+        self.mod.update()
+
+    def coords(self, x, y):
+        cx = x+self.x
+        cy = y+self.y
+        self.last_y = cy
+        self.last_x = cx
+        if self.line1:
+            self.mp.canvas.coords(self.line1, cx, cy, cx+20, cy+20)
+            self.mp.canvas.coords(self.line2, cx, cy+20, cx+20, cy)
+        self.mp.canvas.coords(self.base, cx, cy, cx+20, cy+20)
 
 class MinMaxValueBox:
     def __init__(self, mod, low, high, value, xy, format="{:.2f}"):
