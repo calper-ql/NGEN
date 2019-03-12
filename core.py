@@ -4,6 +4,14 @@ import json
 module_pool_class_registry = {}
 
 
+def __module_json_stripper(json):
+    del json_d["id"]
+    del json_d["type"]
+    del json_d["inputs"]
+    del json_d["outputs"]
+    return json
+
+
 class ModulePool:
     def __init__(self):
         self.id_counter = 0

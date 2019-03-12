@@ -117,3 +117,6 @@ dmypy.json
 
 # IDEA
 .idea/
+
+# VS CODE
+.vs
