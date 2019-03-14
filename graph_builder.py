@@ -8,6 +8,7 @@ from kivy.uix.button import Button
 from kivy.base import runTouchApp
 from kivy.uix.floatlayout import FloatLayout
 from kivy.graphics import *
+from kivy.uix.slider import Slider
 
 from kivy.properties import BooleanProperty, ObjectProperty, ColorProperty
 from kivy.core.window import Window
@@ -18,11 +19,34 @@ from simple_modules import *
 
 
 class ModuleWidget(Widget):
-    def __init__(self, pos):
+    def __init__(self, pos_lu, module):
         Widget.__init__(self)
-        with self.canvas:
-            Rectangle(color=(1, 0, 0, 1), pos=pos, size=[30, 30])
+        self.module = module
+        #with self.canvas:
+        #    Rectangle(color=(1, 0, 0, 1), pos=pos, size=[30, 30])
+        pos = pos_lu.copy()
+        pos[0] += 150
+        sd = module.to_stripped_dict()
+        json_d = json.loads(module.to_json())
 
+        l = Label(text=json_d['type'].replace("Module", ""), 
+            pos=pos,
+            color=[1, 1, 1, 1],
+            size_hint=(1.0, 1.0),
+            halign="left", valign="center")
+        self.add_widget(l)
+
+        pos = pos_lu.copy()
+        pos[0] += 100
+        pos[1] -= 30
+
+        for key in sd:
+            if isinstance(sd[key], (int, float)):
+                s = Slider(min=sd[key]-100, max=sd[key]+100, value=sd[key], 
+                    pos=pos, width=200)
+                self.add_widget(s)
+                pos[1] -= 30
+        
     def on_touch_down(self, touch):
         print(touch)
 
@@ -66,6 +90,7 @@ class HoverButton(Button):
     def on_leave(self):
         pass
 
+
 class SelectionButton(HoverButton):
     def on_enter(self):
         self.last_color = self.background_color
@@ -74,11 +99,13 @@ class SelectionButton(HoverButton):
     def on_leave(self):
         self.background_color = self.last_color
 
+
 class CanvasWidget(Widget):
     def __init__(self, **args):
         Widget.__init__(self, **args)
 
         self.modulePool = ModulePool()
+        self.widgets = []
         
         dd = DropDown()
         self.dd = dd
@@ -108,11 +135,15 @@ class CanvasWidget(Widget):
 
     def add_module(self, identifier):
         print(identifier)
+        module = module_pool_class_registry[identifier](self.modulePool)
+        mw = ModuleWidget([100, 100], module)
+        self.widgets.append(mw)
+        self.add_widget(mw)
+
 
 class NGENModuleApp(App):
     def build(self):
         parent = CanvasWidget()
-
         return parent
 
 

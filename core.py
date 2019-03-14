@@ -94,6 +94,18 @@ class Module:
         n['type'] = type(self).__name__
         return json.dumps(n)
 
+    def to_stripped_dict(self):
+        d = self.__dict__
+        n = {}
+        for key in d:
+            if not hasattr(d[key], '__dict__'):
+                n[key] = d[key]
+        if 'inputs' in n: del n['inputs']
+        if 'outputs' in n: del n['outputs']
+        if 'type' in n: del n['type']
+        if 'id' in n: del n['id']
+        return n
+
     def update(self):
         pass
 
