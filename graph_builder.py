@@ -24,10 +24,25 @@ class ModuleWidget(Widget):
         self.module = module
         #with self.canvas:
         #    Rectangle(color=(1, 0, 0, 1), pos=pos, size=[30, 30])
-        pos = pos_lu.copy()
-        pos[0] += 150
+
         sd = module.to_stripped_dict()
         json_d = json.loads(module.to_json())
+
+        pos = pos_lu.copy()
+        pos[0] += 50
+        pos[1] += 80
+        size = [300, 0]
+
+        for key in sd:
+            if isinstance(sd[key], (int, float)):
+                size[1] -= 30
+
+        with self.canvas:
+            Color(1., 0, 0)
+            Rectangle(pos=pos, size=size)
+
+        pos = pos_lu.copy()
+        pos[0] += 150
 
         l = Label(text=json_d['type'].replace("Module", ""), 
             pos=pos,
@@ -40,18 +55,16 @@ class ModuleWidget(Widget):
         pos[0] += 100
         pos[1] -= 30
 
+        
         for key in sd:
             if isinstance(sd[key], (int, float)):
                 s = Slider(min=sd[key]-100, max=sd[key]+100, value=sd[key], 
                     pos=pos, width=200)
                 self.add_widget(s)
                 pos[1] -= 30
-        
-    def on_touch_down(self, touch):
-        print(touch)
+                size[1] -= 30
 
-    def on_touch_move(self, touch):
-        print(touch)
+    
 
 
 #https://gist.github.com/opqopq/15c707dc4cffc2b6455f
