@@ -1,7 +1,13 @@
 # Inspired by http://libnoise.sourceforge.net/
 
-import cupy as cp
-import numpy as np
+import importlib
+cp = importlib.util.find_spec('cupy')
+#import cupy as cp
+if cp:
+    import numpy as np
+else:
+    import numpy as np
+    cp = np
 import math
 
 __BN_X_NOISE_GEN = 1619
