@@ -158,11 +158,12 @@ class Input:
             return None
 
     def to_json(self):
+        name = self.module.get_input_names()[self]
         self._get_connection()
         if not self.connection:
-            return {"module": -1, "output_id": -1}
+            return {"module": -1, "output_id": -1, "name":name}
         else:
-            return {"module": self.connection.module.id, "output_id": self.connection.id}
+            return {"module": self.connection.module.id, "output_id": self.connection.id, "name":name}
 
     def connect(self, output):
         if output.module != self.module:

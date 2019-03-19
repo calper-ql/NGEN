@@ -1,9 +1,11 @@
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtWidgets import QApplication, QPushButton, QWidget, QLabel, QFrame, QMenuBar, QMainWindow, QMenu
-from PyQt5.QtCore import Qt, QRect, QSize, QPoint
+from PyQt5.QtCore import Qt, QRect, QSize, QPoint, QRectF
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QListWidget, QGridLayout, QSlider
 from PyQt5.QtGui import QPainter, QBrush, QPen
+from PyQt5.QtGui import QPainterPath, QRegion, QLinearGradient
 from core import module_pool_class_registry, ModulePool, Module
+
 from simple_modules import *
 import sys
 
@@ -24,12 +26,9 @@ class ModuleWidget(QFrame):
         super().__init__(parent)
         self.module = module
         self.parent = parent
-        
+    
         self.move(pos)
-        p = self.palette()
-        p.setColor(self.backgroundRole(), QtGui.QColor(71, 255, 80))
-        self.setPalette(p)
-        self.setAutoFillBackground(True)
+
         raw_json = module.to_json()
         stripped_json = module.to_stripped_dict()
         input_dict = self.module.get_input_names()
@@ -89,8 +88,19 @@ class ModuleWidget(QFrame):
             width += 60 
         height = (max(len(input_dict), len(stripped_json))+1) * 30
         self.setGeometry(pos.x(), pos.y(), width, height)
-
+    
         self.show()
+
+    def paintEvent(self, ev):
+        painter = QPainter(self)
+        #painter.begin(self)
+        painter.setRenderHint(QPainter.Antialiasing, True)
+        gradient = QLinearGradient(QRectF(self.rect()).topLeft(),QRectF(self.rect()).bottomLeft())
+        gradient.setColorAt(0.0, QtGui.QColor(51, 153, 102))
+        gradient.setColorAt(0.5, QtGui.QColor(0, 153, 51))
+        painter.setBrush(gradient)
+        painter.drawRoundedRect(self.rect(), 8.0, 8.0)
+        #painter.end()
 
     def mousePressEvent(self, event):
         self.__mousePressPos = None
@@ -183,7 +193,6 @@ class Builder(QMainWindow):
         qp.setRenderHint(QPainter.Antialiasing, True)
         pen = QPen(QtCore.Qt.white, 2, QtCore.Qt.SolidLine)
         qp.setPen(pen)
-
         for module in self.moduleWidgets:
             mw = self.moduleWidgets[module]
             for inp in mw.input_lbls:
@@ -200,7 +209,7 @@ class Builder(QMainWindow):
                         qp.setPen(pen)
                         qp.drawLine(pos.x(), pos.y(), pos2.x(), pos2.y())
 
-        pen = QPen(QtCore.Qt.white, 1, QtCore.Qt.SolidLine)
+        pen = QPen(QtCore.Qt.white, 2, QtCore.Qt.SolidLine)
         qp.setPen(pen)                
         
         qp.setBrush(QBrush(Qt.blue, Qt.SolidPattern))
