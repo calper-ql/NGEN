@@ -2,6 +2,7 @@ import numpy as np
 import json
 
 module_pool_class_registry = {}
+property_class_registry = {}
 
 
 def __module_json_stripper(json):
@@ -69,7 +70,10 @@ class ModulePool:
             mod.inputs[i].connect_idx(inps[i]["module"], inps[i]["output_id"])
 
         for key in json_d:
-            setattr(mod, key, json_d[key])
+            prop = property_class_registry[json_d[key]['type']]()
+            prop.from_json(json_d[key])
+            if hasattr(mod, key):
+                setattr(mod, key, prop)
 
 
 class Module:
@@ -90,7 +94,9 @@ class Module:
         d = self.__dict__
         n = {}
         for key in d:
-            if not hasattr(d[key], '__dict__'):
+            if isinstance(d[key], Property):
+                n[key] = d[key].to_json()
+            elif key == 'id':
                 n[key] = d[key]
         ins = []
         for inp in self.inputs:
@@ -104,8 +110,8 @@ class Module:
         d = self.__dict__
         n = {}
         for key in d:
-            if not hasattr(d[key], '__dict__'):
-                n[key] = d[key]
+            if isinstance(d[key], Property):
+                n[key] = d[key].to_json()
         if 'inputs' in n: del n['inputs']
         if 'outputs' in n: del n['outputs']
         if 'type' in n: del n['type']
@@ -209,40 +215,62 @@ class Output:
         self.module.reset()
 
 
+def register_property(m):
+    property_class_registry[m.__name__] = m
+
 class Property:
     def get(self):
         return None
 
+    def to_json(self):
+        d = self.__dict__
+        d['type'] = type(self).__name__
+        return d
+
+    def from_json(self, json_do):
+        json_d = json_do.copy()
+        del json_d['type']
+        for key in json_d:
+            setattr(self, key, json_d[key])
 
 class BoolProperty(Property):
-    def __init__(self, value):
+    def __init__(self, value=False):
         self.value = value
 
     def get(self):
         return self.value
 
+register_property(BoolProperty)
 
 class SeedProperty(Property):
-    def __init__(self, value):
+    def __init__(self, value=42):
         self.value = value
 
     def get(self):
         return self.value
+
+register_property(SeedProperty)
 
 
 class IntProperty(Property):
-    def __init__(self, value, range=[0, 100]):
+    def __init__(self, value=1, min=0, max=100):
         self.value = value
-        self.range = range
+        self.min = min
+        self.max = max
 
     def get(self):
         return self.value
+
+register_property(IntProperty)
 
 
 class FloatProperty(Property):
-    def __init__(self, value, range=[-1.0, 1.0]):
+    def __init__(self, value=0.0, min=-1.0, max=1.0):
         self.value = value
-        self.range = range
+        self.min = min
+        self.max = max
 
     def get(self):
         return self.value
+
+register_property(FloatProperty)

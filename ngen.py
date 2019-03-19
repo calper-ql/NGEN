@@ -1,10 +1,10 @@
 # Inspired by http://libnoise.sourceforge.net/
 
 import importlib
-cp = importlib.util.find_spec('cupy')
-#import cupy as cp
-if cp:
+cp_existance = importlib.util.find_spec('cupy')
+if cp_existance:
     import numpy as np
+    import cupy as cp
 else:
     import numpy as np
     cp = np

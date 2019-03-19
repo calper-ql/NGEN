@@ -39,17 +39,17 @@ class PerlinModule(Module):
     def __init__(self, mp):
         Module.__init__(self, mp)
         self.A = Output(self)
-        self.seed = 42
-        self.octave = 8
-        self.frequency = 1.0
-        self.lacunarity = 2.0
-        self.persistance = 0.5
+        self.seed = SeedProperty()
+        self.octave = IntProperty()
+        self.frequency = FloatProperty()
+        self.lacunarity = FloatProperty()
+        self.persistance = FloatProperty()
 
     def calculate(self, arg):
-        return perlin(gradient_coherent_noise_3d, arg, self.seed, self.octave,
-                      frequency=self.frequency,
-                      lacunarity=self.lacunarity,
-                      persistance=self.persistance)
+        return perlin(gradient_coherent_noise_3d, arg, self.seed.get(), self.octave.get(),
+                      frequency=self.frequency.get(),
+                      lacunarity=self.lacunarity.get(),
+                      persistance=self.persistance.get())
 
 
 register_module(PerlinModule)
@@ -59,19 +59,19 @@ class RiggedMultiModule(Module):
     def __init__(self, mp):
         Module.__init__(self, mp)
         self.A = Output(self)
-        self.seed = 42
-        self.octave = 8
-        self.frequency = 1.0
-        self.lacunarity = 2.0
-        self.exp = -1.0
-        self.offset = 1.0
+        self.seed = SeedProperty()
+        self.octave = IntProperty()
+        self.frequency = FloatProperty()
+        self.lacunarity = FloatProperty()
+        self.exp = FloatProperty()
+        self.offset = FloatProperty()
 
     def calculate(self, arg):
-        return rigged_multi(gradient_coherent_noise_3d, arg, self.seed, self.octave,
-                            frequency=self.frequency,
-                            lacunarity=self.lacunarity,
-                            exp=self.exp,
-                            offset=self.offset)
+        return rigged_multi(gradient_coherent_noise_3d, arg, self.seed.get(), self.octave.get(),
+                            frequency=self.frequency.get(),
+                            lacunarity=self.lacunarity.get(),
+                            exp=self.exp.get(),
+                            offset=self.offset.get())
 
 
 register_module(RiggedMultiModule)
@@ -84,14 +84,14 @@ class SelectModule(Module):
         self.A = Input(self)
         self.B = Input(self)
         self.output = Output(self)
-        self.bound = 0.0
-        self.falloff = 0.1
-        self.cutoff = 0.0
+        self.bound = FloatProperty()
+        self.falloff = FloatProperty()
+        self.cutoff = FloatProperty()
 
     def calculate(self, arg):
-        ctrl = self.control.get(arg) - self.cutoff
-        lin_val = (ctrl + self.falloff) / ((2 * self.falloff))
-        val = self.A.get(arg) * lin_val + self.B.get(arg) * (self.bound - lin_val)
+        ctrl = self.control.get(arg) - self.cutoff.get()
+        lin_val = (ctrl + self.falloff.get()) / ((2 * self.falloff.get()))
+        val = self.A.get(arg) * lin_val + self.B.get(arg) * (self.bound.get() - lin_val)
         return val
 
 
@@ -102,16 +102,16 @@ class VoronoiModule(Module):
     def __init__(self, mp):
         Module.__init__(self, mp)
         self.output = Output(self)
-        self.seed = 42
-        self.frequency = 1.0
-        self.displacement = 1.0
-        self.distance_enabled = False
+        self.seed = SeedProperty()
+        self.frequency = FloatProperty()
+        self.displacement = FloatProperty()
+        self.distance_enabled = BoolProperty()
 
     def calculate(self, arg):
-        return voronoi(value_noise_3d, arg, self.seed,
-                       frequency=self.frequency,
-                       displacement=self.displacement,
-                       distance_enabled=self.distance_enabled)
+        return voronoi(value_noise_3d, arg, self.seed.get(),
+                       frequency=self.frequency.get(),
+                       displacement=self.displacement.get(),
+                       distance_enabled=self.distance_enabled.get())
 
 
 register_module(VoronoiModule)
@@ -146,3 +146,5 @@ if __name__ == "__main__":
     assert jsoned2 == jsoned
     assert jsoned3 == jsoned
     assert jsoned2 == jsoned3
+
+    print(FloatProperty(10, 0.3, 13.0).to_json())
