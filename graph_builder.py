@@ -176,7 +176,7 @@ class Builder(QMainWindow):
         else:
             if isinstance(btn.arg, Input):
                 self.selected = btn
-        print(self.selected)
+        #print(self.selected)
         self.repaint()
 
     def reset_selection(self):

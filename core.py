@@ -213,12 +213,14 @@ class Property:
     def get(self):
         return None
 
+
 class BoolProperty(Property):
     def __init__(self, value):
         self.value = value
 
     def get(self):
         return self.value
+
 
 class SeedProperty(Property):
     def __init__(self, value):
