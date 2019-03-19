@@ -38,13 +38,19 @@ class ModulePool:
         return d
 
     def from_json(self, json_d):
+        copy = json_d.copy()
         self.id_counter = 0
         self.modules = {}
-        mods = json_d["modules"]
+        mods = copy["modules"]
         for mod in mods:
-            self.construct_module(json.loads(mod))
+            self.construct_module(mod)
+        self.find_max()
+        for m in self.modules:
+            for inp in self.modules[m].inputs:
+                inp._get_connection()
 
-    def construct_module(self, json_d):
+    def construct_module(self, json_do):
+        json_d = json_do.copy()
         id = json_d["id"]
         tp = json_d["type"]
         inps = json_d["inputs"]
@@ -92,7 +98,7 @@ class Module:
         n['inputs'] = ins
         n['outputs'] = len(self.outputs)
         n['type'] = type(self).__name__
-        return json.dumps(n)
+        return n
 
     def to_stripped_dict(self):
         d = self.__dict__
@@ -106,6 +112,22 @@ class Module:
         if 'id' in n: del n['id']
         return n
 
+    def get_input_names(self):
+        d = self.__dict__
+        n = {}
+        for key in d:
+            if isinstance(d[key], Input):
+                n[d[key]] = key
+        return n
+
+    def get_output_names(self):
+        d = self.__dict__
+        n = {}
+        for key in d:
+            if isinstance(d[key], Output):
+                n[d[key]] = key
+        return n
+
     def update(self):
         pass
 
@@ -114,7 +136,7 @@ class Module:
             io.id = len(self.inputs)
             self.inputs.append(io)
         elif isinstance(io, Output):
-            io.id = len(self.inputs)
+            io.id = len(self.outputs)
             self.outputs.append(io)
 
 
@@ -131,12 +153,12 @@ class Input:
             return self.connection.get(arg)
         else:
             if self.cp:
-                self.__get_connection()
+                self._get_connection()
                 return self.connection.get(arg)
             return None
 
     def to_json(self):
-        self.__get_connection()
+        self._get_connection()
         if not self.connection:
             return {"module": -1, "output_id": -1}
         else:
@@ -151,11 +173,19 @@ class Input:
         if mod_id != self.module.id:
             self.cp = [mod_id, out_id]
 
-    def __get_connection(self):
+    def _get_connection(self):
         if self.cp:
             if len(self.module.module_pool.modules) > self.cp[0]:
                 if len(self.module.module_pool.modules[self.cp[0]].outputs) > self.cp[1]:
                     self.connection = self.module.module_pool.modules[self.cp[0]].outputs[self.cp[1]]
+
+    def reset(self):
+        if self.connection:
+            self.connection.reset()
+
+    def disconnect(self):
+        self.connection = None
+        self.cp = None
 
 
 class Output:
@@ -176,3 +206,34 @@ class Output:
     def reset(self):
         self.stored_value = None
         self.module.reset()
+
+
+class Property:
+    def get(self):
+        return None
+
+
+class SeedProperty(Property):
+    def __init__(self, value):
+        self.value = value
+
+    def get(self):
+        return self.value
+
+
+class IntProperty(Property):
+    def __init__(self, value, range=[0, 100]):
+        self.value = value
+        self.range = range
+
+    def get(self):
+        return self.value
+
+
+class FloatProperty(Property):
+    def __init__(self, value, range=[-1.0, 1.0]):
+        self.value = value
+        self.range = range
+
+    def get(self):
+        return self.value

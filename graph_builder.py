@@ -1,164 +1,237 @@
-from random import random
-from kivy.app import App
-from kivy.uix.widget import Widget
-from kivy.uix.button import Button
-from kivy.uix.label import Label
-from kivy.uix.dropdown import DropDown
-from kivy.uix.button import Button
-from kivy.base import runTouchApp
-from kivy.uix.floatlayout import FloatLayout
-from kivy.graphics import *
-from kivy.uix.slider import Slider
-
-from kivy.properties import BooleanProperty, ObjectProperty, ColorProperty
-from kivy.core.window import Window
-
-
-from simple_modules import module_pool_class_registry
+from PyQt5 import QtCore, QtGui
+from PyQt5.QtWidgets import QApplication, QPushButton, QWidget, QLabel, QFrame, QMenuBar, QMainWindow, QMenu
+from PyQt5.QtCore import Qt, QRect, QSize, QPoint
+from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QListWidget, QGridLayout, QSlider
+from PyQt5.QtGui import QPainter, QBrush, QPen
+from core import module_pool_class_registry, ModulePool, Module
 from simple_modules import *
+import sys
 
-
-class ModuleWidget(Widget):
-    def __init__(self, pos_lu, module):
-        Widget.__init__(self)
-        self.module = module
-        #with self.canvas:
-        #    Rectangle(color=(1, 0, 0, 1), pos=pos, size=[30, 30])
-
-        sd = module.to_stripped_dict()
-        json_d = json.loads(module.to_json())
-
-        pos = pos_lu.copy()
-        pos[0] += 50
-        pos[1] += 80
-        size = [300, 0]
-
-        for key in sd:
-            if isinstance(sd[key], (int, float)):
-                size[1] -= 30
-
-        with self.canvas:
-            Color(1., 0, 0)
-            Rectangle(pos=pos, size=size)
-
-        pos = pos_lu.copy()
-        pos[0] += 150
-
-        l = Label(text=json_d['type'].replace("Module", ""), 
-            pos=pos,
-            color=[1, 1, 1, 1],
-            size_hint=(1.0, 1.0),
-            halign="left", valign="center")
-        self.add_widget(l)
-
-        pos = pos_lu.copy()
-        pos[0] += 100
-        pos[1] -= 30
-
-        
-        for key in sd:
-            if isinstance(sd[key], (int, float)):
-                s = Slider(min=sd[key]-100, max=sd[key]+100, value=sd[key], 
-                    pos=pos, width=200)
-                self.add_widget(s)
-                pos[1] -= 30
-                size[1] -= 30
-
+class QArgPushButton(QPushButton):
+    def __init__(self, text, arg):
+        super().__init__(text)
+        self.arg = arg
+        self.callback = None
+        self.clicked.connect(self.on_click)
     
+    def on_click(self):
+        if self.callback:
+            self.callback(self)
 
 
-#https://gist.github.com/opqopq/15c707dc4cffc2b6455f
-class HoverButton(Button):
-    hovered = BooleanProperty(False)
-    border_point= ObjectProperty(None)
-    '''Contains the last relevant point received by the Hoverable. This can
-    be used in `on_enter` or `on_leave` in order to know where was dispatched the event.
-    '''
-
-    def __init__(self, **kwargs):
-        self.register_event_type('on_enter')
-        self.register_event_type('on_leave')
-        Window.bind(mouse_pos=self.on_mouse_pos)
-        super(HoverButton, self).__init__(**kwargs)
-
-    def on_mouse_pos(self, *args):
-        if not self.get_root_window():
-            return # do proceed if I'm not displayed <=> If have no parent
-        pos = args[1]
-        #Next line to_widget allow to compensate for relative layout
-        inside = self.collide_point(*self.to_widget(*pos))
-        if self.hovered == inside:
-            #We have already done what was needed
-            return
-        self.border_point = pos
-        self.hovered = inside
-        if inside:
-            self.dispatch('on_enter')
-        else:
-            self.dispatch('on_leave')
-
-    def on_enter(self):
-        pass
-
-    def on_leave(self):
-        pass
-
-
-class SelectionButton(HoverButton):
-    def on_enter(self):
-        self.last_color = self.background_color
-        self.background_color = (0, 0, 1, 1)
-
-    def on_leave(self):
-        self.background_color = self.last_color
-
-
-class CanvasWidget(Widget):
-    def __init__(self, **args):
-        Widget.__init__(self, **args)
-
-        self.modulePool = ModulePool()
-        self.widgets = []
+class ModuleWidget(QFrame):
+    def __init__(self, parent, module, pos):
+        super().__init__(parent)
+        self.module = module
+        self.parent = parent
         
-        dd = DropDown()
-        self.dd = dd
+        self.move(pos)
+        p = self.palette()
+        p.setColor(self.backgroundRole(), QtGui.QColor(71, 255, 80))
+        self.setPalette(p)
+        self.setAutoFillBackground(True)
+        raw_json = module.to_json()
+        stripped_json = module.to_stripped_dict()
+        input_dict = self.module.get_input_names()
+        output_dict = self.module.get_output_names()
+        print(stripped_json)
 
-        for item in module_pool_class_registry:
-            converted_item = item.replace("Module", "")
-            print(item)
+        panel_layout = QGridLayout(self)
+        panel_layout.cellRect(max(len(input_dict), len(stripped_json))+1, 5)
 
-            mb = SelectionButton(text=converted_item, text_size=(None, 20), 
-                size_hint_y=None, size_hint_x=None, height=20,
-                background_color=(80/255, 80/255, 80/255, 1),
-                background_normal='',)
+        lbl = QLabel(raw_json['type'])
+        panel_layout.addWidget(lbl, 0, 0, 1, 3)
 
-            mb.item = item
-            mb.bind(on_press=lambda btn: dd.select(btn.item))
+        self.input_lbls = {}
+        self.output_lbls = {}
 
-            dd.add_widget(mb)
+        for index, inp in enumerate(input_dict):
+            lbl = QArgPushButton(input_dict[inp], inp)
+            p = lbl.palette()
+            p.setColor(lbl.backgroundRole(), QtGui.QColor(63, 82, 255))
+            lbl.setPalette(p)
+            lbl.setAutoFillBackground(True)
+            panel_layout.addWidget(lbl, index+1, 0, 1, 1)
+            self.input_lbls[inp] = lbl
+            def on_click(btn):
+                self.parent.select(btn)
+            lbl.callback = on_click
+
+        for index, prop in enumerate(stripped_json):
+            sl = QSlider(Qt.Horizontal)
+            if len(input_dict) > 0 and len(output_dict) > 0:
+                panel_layout.addWidget(sl, index+1, 1, 1, 3)
+            elif len(input_dict) == 0 and len(output_dict) > 0:
+                panel_layout.addWidget(sl, index+1, 0, 1, 4)
+            elif len(input_dict) > 0 and len(output_dict) == 0:
+                panel_layout.addWidget(sl, index+1, 1, 1, 3)
+            else:
+                panel_layout.addWidget(sl, index+1, 0, 1, 5)
+
+        for index, out in enumerate(output_dict):
+            lbl = QArgPushButton(output_dict[out], out)
+            p = lbl.palette()
+            p.setColor(lbl.backgroundRole(), QtGui.QColor(255, 104, 112))
+            lbl.setPalette(p)
+            lbl.setAutoFillBackground(True)
+            panel_layout.addWidget(lbl, index+1, 4, 1, 1)
+            self.output_lbls[out] = lbl 
+            def on_click(btn):
+                self.parent.select(btn)
+            lbl.callback = on_click
             
+        width = 0
+        if len(input_dict) > 0:
+            width += 60
+        if len(stripped_json) > 0:
+            width += 200
+        if len(output_dict) > 0:
+            width += 60 
+        height = (max(len(input_dict), len(stripped_json))+1) * 30
+        self.setGeometry(pos.x(), pos.y(), width, height)
 
-        dd_button = SelectionButton(text="+", size_hint=(50, 50), height=50, 
-            background_color=(80/255, 80/255, 80/255, 1),
-            background_normal='', font_size="36px")
-        dd_button.allowed = False
-        dd_button.bind(on_release=dd.open)
-        dd.bind(on_select=lambda instance, x: self.add_module(x))
-        self.add_widget(dd_button)
+        self.show()
 
-    def add_module(self, identifier):
-        print(identifier)
-        module = module_pool_class_registry[identifier](self.modulePool)
-        mw = ModuleWidget([100, 100], module)
-        self.widgets.append(mw)
-        self.add_widget(mw)
+    def mousePressEvent(self, event):
+        self.__mousePressPos = None
+        self.__mouseMovePos = None
+        if event.button() == QtCore.Qt.LeftButton:
+            self.__mousePressPos = event.globalPos()
+            self.__mouseMovePos = event.globalPos()
+        super(ModuleWidget, self).mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        try:
+            if event.buttons() == QtCore.Qt.LeftButton:
+                currPos = self.mapToGlobal(self.pos())
+                globalPos = event.globalPos()
+                diff = globalPos - self.__mouseMovePos
+                newPos = self.mapFromGlobal(currPos + diff)
+                self.move(newPos)
+                self.__mouseMovePos = globalPos
+            super(ModuleWidget, self).mouseMoveEvent(event)
+            self.parent.repaint()
+        except:
+            pass
+
+    def mouseReleaseEvent(self, event):
+        if self.__mousePressPos is not None:
+            moved = event.globalPos() - self.__mousePressPos 
+            if moved.manhattanLength() > 3:
+                event.ignore()
+                return
+        super(ModuleWidget, self).mouseReleaseEvent(event)
 
 
-class NGENModuleApp(App):
-    def build(self):
-        parent = CanvasWidget()
-        return parent
+class Builder(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.title = 'NGEN BUILDER'
+        self.setGeometry(100, 100, 1000, 1000)
+        p = self.palette()
+        p.setColor(self.backgroundRole(), QtGui.QColor(0, 0, 0))
+        self.setPalette(p)
+        self.setAutoFillBackground(True)
+        self.show()
+        self.mp = ModulePool()
+        self.moduleWidgets = {}
+        self.reverseModuleWidgets = {}
+        self.reset_selection()
+
+    def contextMenuEvent(self, event):
+        contextMenu = QMenu(self)
+        actions = {}
+        for item in module_pool_class_registry:
+            actions[contextMenu.addAction(item)] = item
+        action = contextMenu.exec_(self.mapToGlobal(event.pos()))
+        if action is not None:
+            mod = module_pool_class_registry[actions[action]](self.mp)
+            mw = ModuleWidget(self, mod, event.pos())
+            self.moduleWidgets[mod] = mw
+            self.reverseModuleWidgets[mw] = mod
+        self.repaint()
+
+    def select(self, btn):
+        if btn == self.selected:
+            if isinstance(btn.arg, Output):
+                return
+            elif isinstance(btn.arg, Input):
+                btn.arg.disconnect()
+        if self.selected:
+            if isinstance(btn.arg, Output):
+                self.selected.arg.connect(btn.arg)
+            elif isinstance(btn.arg, Input):
+                pass
+            self.reset_selection()
+        else:
+            if isinstance(btn.arg, Input):
+                self.selected = btn
+        print(self.selected)
+        self.repaint()
+
+    def reset_selection(self):
+        self.selected = None
+        self.selected_type = None
+
+    def paintEvent(self, e):
+        qp = QPainter()
+        qp.begin(self)
+        self.drawLines(qp)
+        qp.end()
+
+    def drawLines(self, qp):
+        qp.setRenderHint(QPainter.Antialiasing, True)
+        pen = QPen(QtCore.Qt.white, 2, QtCore.Qt.SolidLine)
+        qp.setPen(pen)
+
+        for module in self.moduleWidgets:
+            mw = self.moduleWidgets[module]
+            for inp in mw.input_lbls:
+                btn = mw.input_lbls[inp]
+                pos = btn.pos() + mw.pos() + QPoint(-10, 
+                            btn.size().height()/2.0)
+                if inp.connection:
+                    mwo = self.moduleWidgets[inp.connection.module]
+                    if inp.connection in mwo.output_lbls:
+                        btno = mwo.output_lbls[inp.connection]
+                        pos2 = btno.pos() + mwo.pos() + QPoint(btno.size().width()+10, 
+                            btno.size().height()/2.0)
+                        pen.setStyle(QtCore.Qt.DashLine)
+                        qp.setPen(pen)
+                        qp.drawLine(pos.x(), pos.y(), pos2.x(), pos2.y())
+
+        pen = QPen(QtCore.Qt.white, 1, QtCore.Qt.SolidLine)
+        qp.setPen(pen)                
+        
+        qp.setBrush(QBrush(Qt.blue, Qt.SolidPattern))
+        for module in self.moduleWidgets:
+            mw = self.moduleWidgets[module]
+            for inp in mw.input_lbls:
+                btn = mw.input_lbls[inp]
+                pos = btn.pos() + mw.pos() + QPoint(-10, 
+                            btn.size().height()/2.0)
+                qp.drawEllipse(pos.x()-5, pos.y()-7, 15, 15)
+
+        qp.setBrush(QBrush(Qt.red, Qt.SolidPattern))
+        for module in self.moduleWidgets:
+            mw = self.moduleWidgets[module]
+            for out in mw.output_lbls:
+                btn = mw.output_lbls[out]
+                pos = btn.pos() + mw.pos() + QPoint(btn.size().width(), 
+                            btn.size().height()/2.0)
+                qp.drawEllipse(pos.x(), pos.y()-7, 15, 15)
+
+    def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.MiddleButton:
+            print()
+            print()
+            bt_d = json.dumps(self.mp.to_json())
+            td_d = json.loads(bt_d)
+            json_d = json.dumps(td_d, indent=4, sort_keys=True)
+            print(json_d)
 
 
-if __name__ == '__main__':
-    NGENModuleApp().run()
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    ex = Builder()
+    app.exec_()

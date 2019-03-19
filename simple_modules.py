@@ -130,14 +130,19 @@ if __name__ == "__main__":
     print(jsoned)
 
     mp2 = ModulePool()
+    print('-----------')
+    print(jsoned)
     mp2.from_json(jsoned)
     jsoned2 = mp2.to_json()
     print(jsoned2)
 
     mp3 = ModulePool()
-    mp3.from_json(jsoned2)
+    print('-----------')
+    print(jsoned)
+    mp3.from_json(jsoned)
     jsoned3 = mp2.to_json()
     print(jsoned3)
 
     assert jsoned2 == jsoned
+    assert jsoned3 == jsoned
     assert jsoned2 == jsoned3
