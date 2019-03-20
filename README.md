@@ -1,4 +1,7 @@
 # NGEN
+
+Inspired by [libnoise](http://libnoise.sourceforge.net/)
+
 NGEN is a procedural generation library that uses vectorization in python to generate values depending on a computational graph
 
 NGEN utilizes various noise techniques such as Perlin Noise or Voronoi Noise. NGEN also comes with a built in graph creation UI and the ability to save and load graphs.
