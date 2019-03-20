@@ -1,13 +1,112 @@
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtWidgets import QApplication, QPushButton, QWidget, QLabel, QFrame, QMenuBar, QMainWindow, QMenu
 from PyQt5.QtCore import Qt, QRect, QSize, QPoint, QRectF
-from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QListWidget, QGridLayout, QSlider
+from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QListWidget, QGridLayout, QSlider, QSpinBox, QRadioButton
 from PyQt5.QtGui import QPainter, QBrush, QPen
 from PyQt5.QtGui import QPainterPath, QRegion, QLinearGradient
 from core import module_pool_class_registry, ModulePool, Module
+from numpy import interp
 
 from simple_modules import *
 import sys
+
+property_widgets = {}
+def register_property_widget(p, m):
+    property_widgets[p.__name__] = m
+
+
+class BoolWidget(QWidget):
+    def __init__(self, parent, prop, name):
+        super().__init__(parent)
+        self.parent = parent
+        self.prop = prop
+        hl = QHBoxLayout(self)
+        self.sl = QRadioButton()
+        self.sl.setChecked(prop.value)
+        hl.addWidget(QLabel(name))
+        hl.addWidget(self.sl)
+        self.sl.clicked.connect(self.valueHandler)
+        self.show()
+    
+    def valueHandler(self, value):
+        self.prop.value = value
+        self.parent.update()
+
+register_property_widget(BoolProperty, BoolWidget)
+
+
+class SeedWidget(QWidget):
+    def __init__(self, parent, prop, name):
+        super().__init__(parent)
+        self.parent = parent
+        self.prop = prop
+        hl = QHBoxLayout(self)
+        self.sl = QSpinBox()
+        self.sl.setValue(prop.value)
+        hl.addWidget(QLabel(name))
+        hl.addWidget(self.sl)
+        self.sl.valueChanged.connect(self.valueHandler)
+        self.show()
+    
+    def valueHandler(self, value):
+        self.prop.value = value
+        self.parent.update()
+
+register_property_widget(SeedProperty, SeedWidget)
+
+
+class FloatWidget(QWidget):
+    def __init__(self, parent, prop, name):
+        super().__init__(parent)
+        self.parent = parent
+        self.prop = prop
+        hl = QHBoxLayout(self)
+        self.sl = QSlider(Qt.Horizontal)
+        self.sl.setMinimum(0)
+        self.sl.setMaximum(100)
+        self.sl.setValue(interp(prop.get(), [prop.min, prop.max], [0, 100]))
+        self.sl.valueChanged.connect(self.valueHandler)
+        hl.addWidget(QLabel(name))
+        hl.addWidget(self.sl)
+        self.val_button = QPushButton("{0:.2f}".format(prop.value))
+        hl.addWidget(self.val_button)
+        #self.setFixedHeight(20)
+        self.show()
+
+    def valueHandler(self, value):
+        p = self.prop
+        p.value = float(interp(value, [1, 100], [p.min, p.max]))
+        self.val_button.setText("{0:.2f}".format(p.value))
+        self.parent.update()
+
+register_property_widget(FloatProperty, FloatWidget)
+
+
+class IntWidget(QWidget):
+    def __init__(self, parent, prop, name):
+        super().__init__(parent)
+        self.parent = parent
+        self.prop = prop
+        hl = QHBoxLayout(self)
+        self.sl = QSlider(Qt.Horizontal)
+        self.sl.setMinimum(prop.min)
+        self.sl.setMaximum(prop.max)
+        self.sl.setValue(prop.get())
+        self.sl.valueChanged.connect(self.valueHandler)
+        hl.addWidget(QLabel(name))
+        hl.addWidget(self.sl)
+        self.val_button = QPushButton(str(prop.value))
+        hl.addWidget(self.val_button)
+        #self.setFixedHeight(20)
+        self.show()
+
+    def valueHandler(self, value):
+        p = self.prop
+        p.value = int(interp(value, [1, 100], [p.min, p.max]))
+        self.val_button.setText(str(p.value))
+        self.parent.update()
+
+register_property_widget(IntProperty, IntWidget)
 
 class QArgPushButton(QPushButton):
     def __init__(self, text, arg):
@@ -36,10 +135,10 @@ class ModuleWidget(QFrame):
         print(stripped_json)
 
         panel_layout = QGridLayout(self)
-        panel_layout.cellRect(max(len(input_dict), len(stripped_json))+1, 5)
+        panel_layout.cellRect(max(len(input_dict), len(stripped_json))+1, 6)
 
-        lbl = QLabel(raw_json['type'])
-        panel_layout.addWidget(lbl, 0, 0, 1, 3)
+        lbl = QLabel(raw_json['type'].replace('Module', ''))
+        panel_layout.addWidget(lbl, 0, 0, 1, 4)
 
         self.input_lbls = {}
         self.output_lbls = {}
@@ -57,15 +156,11 @@ class ModuleWidget(QFrame):
             lbl.callback = on_click
 
         for index, prop in enumerate(stripped_json):
-            sl = QSlider(Qt.Horizontal)
-            if len(input_dict) > 0 and len(output_dict) > 0:
-                panel_layout.addWidget(sl, index+1, 1, 1, 3)
-            elif len(input_dict) == 0 and len(output_dict) > 0:
-                panel_layout.addWidget(sl, index+1, 0, 1, 4)
-            elif len(input_dict) > 0 and len(output_dict) == 0:
-                panel_layout.addWidget(sl, index+1, 1, 1, 3)
-            else:
-                panel_layout.addWidget(sl, index+1, 0, 1, 5)
+            sl = property_widgets[stripped_json[prop]['type']](self, getattr(self.module, prop), prop)
+            if len(input_dict) > 0:
+                panel_layout.addWidget(sl, index+1, 1, 1, 5)
+            elif len(input_dict) == 0:
+                panel_layout.addWidget(sl, index+1, 0, 1, 6)
 
         for index, out in enumerate(output_dict):
             lbl = QArgPushButton(output_dict[out], out)
@@ -73,7 +168,7 @@ class ModuleWidget(QFrame):
             p.setColor(lbl.backgroundRole(), QtGui.QColor(255, 104, 112))
             lbl.setPalette(p)
             lbl.setAutoFillBackground(True)
-            panel_layout.addWidget(lbl, index+1, 4, 1, 1)
+            panel_layout.addWidget(lbl, index, 5, 1, 1)
             self.output_lbls[out] = lbl 
             def on_click(btn):
                 self.parent.select(btn)
@@ -83,13 +178,16 @@ class ModuleWidget(QFrame):
         if len(input_dict) > 0:
             width += 60
         if len(stripped_json) > 0:
-            width += 200
+            width += 300
         if len(output_dict) > 0:
             width += 60 
-        height = (max(len(input_dict), len(stripped_json))+1) * 30
+        height = (max(len(input_dict), len(stripped_json))+1) * 45
         self.setGeometry(pos.x(), pos.y(), width, height)
     
         self.show()
+
+    def update(self):
+        self.parent.update()
 
     def paintEvent(self, ev):
         painter = QPainter(self)
@@ -147,6 +245,9 @@ class Builder(QMainWindow):
         self.moduleWidgets = {}
         self.reverseModuleWidgets = {}
         self.reset_selection()
+
+    def update(self):
+        print('value changed')
 
     def contextMenuEvent(self, event):
         contextMenu = QMenu(self)
