@@ -363,6 +363,6 @@ class Builder(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    x = create_point_grid([0, 0, 0], [0.5, 0, 0], [0.5, 1, 0], [0, 1, 0], 600, 300)
+    x = create_point_grid([0, 0, 0], [ 1, 0.5, 0], [ 1, 0.5, 0], [0, 1, 0], 600, 1200)
     ex = Builder(test_arg=x)
     app.exec_()

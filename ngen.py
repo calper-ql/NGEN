@@ -321,6 +321,16 @@ def voronoi(func, icp, seed, frequency=1.0, displacement=1.0, distance_enabled=F
     return value + displacement * func(temp, seed=0)
 
 
+def radnorm_arg(arg):
+    sqr = arg*arg
+    total = cp.sum(sqr, axis=-1)
+    length = cp.sqrt(total)
+    length = cp.expand_dims(length, axis=-1)
+    length = cp.repeat(length, 3, axis=-1)
+    norm = arg/length
+    norm = 1+norm/2.0
+    return norm
+
 
 if __name__=='__main__':
     print("BASE NOISE TEST")

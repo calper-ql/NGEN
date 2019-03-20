@@ -139,6 +139,18 @@ class VoronoiModule(Module):
 
 register_module(VoronoiModule)
 
+class RadNormModule(Module):
+    def __init__(self, mp):
+        Module.__init__(self, mp)
+        self.output = Output(self)
+        self.input = Input(self)
+
+    def calculate(self, arg):
+        return self.input.get(radnorm_arg(arg))  
+
+
+register_module(RadNormModule)
+
 if __name__ == "__main__":
     print(module_pool_class_registry)
 
