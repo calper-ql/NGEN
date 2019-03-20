@@ -25,6 +25,10 @@ class ModulePool:
         self.modules[temp] = module
         return temp
 
+    def reset(self):
+        for m in self.modules:
+            self.modules[m].reset()
+
     def find_max(self):
         self.id_counter = 0
         for m in self.modules:
@@ -83,8 +87,8 @@ class Module:
         self.inputs = []
         self.outputs = []
 
-    def calculate(self, arg, output_id):
-        pass
+    def calculate(self, arg):
+        return None
 
     def reset(self):
         for conn in self.inputs:
@@ -207,12 +211,12 @@ class Output:
 
     def get(self, arg):
         if self.stored_value is None:
-            self.module.calculate(arg, self.id)
+            self.stored_value = self.module.calculate(arg)
         return self.stored_value
 
     def reset(self):
         self.stored_value = None
-        self.module.reset()
+        #self.module.reset()
 
 
 def register_property(m):

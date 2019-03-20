@@ -6,6 +6,29 @@ from core import module_pool_class_registry
 def register_module(m):
     module_pool_class_registry[m.__name__] = m
 
+class OutputModule(Module):
+    def __init__(self, mp):
+        Module.__init__(self, mp)
+        self.input = Input(self)
+
+    def calculate(self, arg):
+        return self.input.get(arg)
+
+register_module(OutputModule)
+
+
+class RGBOutputModule(Module):
+    def __init__(self, mp):
+        Module.__init__(self, mp)
+        self.R = Input(self)
+        self.G = Input(self)
+        self.B = Input(self)
+
+    def calculate(self, arg):
+        return [self.R.get(arg), self.G.get(arg), self.B.get(arg)]
+
+register_module(RGBOutputModule)
+
 
 class AddModule(Module):
     def __init__(self, mp):
@@ -40,10 +63,10 @@ class PerlinModule(Module):
         Module.__init__(self, mp)
         self.A = Output(self)
         self.seed = SeedProperty()
-        self.octave = IntProperty()
-        self.frequency = FloatProperty()
-        self.lacunarity = FloatProperty()
-        self.persistance = FloatProperty()
+        self.octave = IntProperty(value=4, min=1, max=20)
+        self.frequency = FloatProperty(1, 0.5, 100)
+        self.lacunarity = FloatProperty(2.0, 1.0, 3.0)
+        self.persistance = FloatProperty(0.5, 0.001, 0.999)
 
     def calculate(self, arg):
         return perlin(gradient_coherent_noise_3d, arg, self.seed.get(), self.octave.get(),
@@ -60,11 +83,11 @@ class RiggedMultiModule(Module):
         Module.__init__(self, mp)
         self.A = Output(self)
         self.seed = SeedProperty()
-        self.octave = IntProperty()
-        self.frequency = FloatProperty()
-        self.lacunarity = FloatProperty()
-        self.exp = FloatProperty()
-        self.offset = FloatProperty()
+        self.octave = IntProperty(4, 1, 20)
+        self.frequency = FloatProperty(1, 0.5, 100)
+        self.lacunarity = FloatProperty(2.0, 1.0, 3.0)
+        self.exp = FloatProperty(-1.0, 0.0, -3.0)
+        self.offset = FloatProperty(0.0, -3.0, 3.0)
 
     def calculate(self, arg):
         return rigged_multi(gradient_coherent_noise_3d, arg, self.seed.get(), self.octave.get(),
@@ -84,9 +107,9 @@ class SelectModule(Module):
         self.A = Input(self)
         self.B = Input(self)
         self.output = Output(self)
-        self.bound = FloatProperty()
-        self.falloff = FloatProperty()
-        self.cutoff = FloatProperty()
+        self.bound = FloatProperty(0, -1.0, 1.0)
+        self.falloff = FloatProperty(0.0, -1.0, 1.0)
+        self.cutoff = FloatProperty(0.0, -1.0, 1.0)
 
     def calculate(self, arg):
         ctrl = self.control.get(arg) - self.cutoff.get()
@@ -103,8 +126,8 @@ class VoronoiModule(Module):
         Module.__init__(self, mp)
         self.output = Output(self)
         self.seed = SeedProperty()
-        self.frequency = FloatProperty()
-        self.displacement = FloatProperty()
+        self.frequency = FloatProperty(1, 0.5, 100)
+        self.displacement = FloatProperty(0.0, 0.0, 1.0)
         self.distance_enabled = BoolProperty()
 
     def calculate(self, arg):

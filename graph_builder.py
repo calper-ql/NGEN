@@ -6,6 +6,8 @@ from PyQt5.QtGui import QPainter, QBrush, QPen
 from PyQt5.QtGui import QPainterPath, QRegion, QLinearGradient
 from core import module_pool_class_registry, ModulePool, Module
 from numpy import interp
+import cv2
+import traceback
 
 from simple_modules import *
 import sys
@@ -70,7 +72,6 @@ class FloatWidget(QWidget):
         hl.addWidget(self.sl)
         self.val_button = QPushButton("{0:.2f}".format(prop.value))
         hl.addWidget(self.val_button)
-        #self.setFixedHeight(20)
         self.show()
 
     def valueHandler(self, value):
@@ -92,12 +93,12 @@ class IntWidget(QWidget):
         self.sl.setMinimum(prop.min)
         self.sl.setMaximum(prop.max)
         self.sl.setValue(prop.get())
+        self.sl.setTickInterval(1)
         self.sl.valueChanged.connect(self.valueHandler)
         hl.addWidget(QLabel(name))
         hl.addWidget(self.sl)
         self.val_button = QPushButton(str(prop.value))
         hl.addWidget(self.val_button)
-        #self.setFixedHeight(20)
         self.show()
 
     def valueHandler(self, value):
@@ -125,14 +126,13 @@ class ModuleWidget(QFrame):
         super().__init__(parent)
         self.module = module
         self.parent = parent
-    
+
         self.move(pos)
 
         raw_json = module.to_json()
         stripped_json = module.to_stripped_dict()
         input_dict = self.module.get_input_names()
         output_dict = self.module.get_output_names()
-        print(stripped_json)
 
         panel_layout = QGridLayout(self)
         panel_layout.cellRect(max(len(input_dict), len(stripped_json))+1, 6)
@@ -176,11 +176,10 @@ class ModuleWidget(QFrame):
             
         width = 0
         if len(input_dict) > 0:
-            width += 60
+            width += 60*2
         if len(stripped_json) > 0:
             width += 300
-        if len(output_dict) > 0:
-            width += 60 
+
         height = (max(len(input_dict), len(stripped_json))+1) * 45
         self.setGeometry(pos.x(), pos.y(), width, height)
     
@@ -232,7 +231,8 @@ class ModuleWidget(QFrame):
 
 
 class Builder(QMainWindow):
-    def __init__(self):
+    def __init__(self, test_arg=None):
+        self.test_arg = test_arg
         super().__init__()
         self.title = 'NGEN BUILDER'
         self.setGeometry(100, 100, 1000, 1000)
@@ -247,8 +247,26 @@ class Builder(QMainWindow):
         self.reset_selection()
 
     def update(self):
-        print('value changed')
-
+        #print('value changed')
+        if self.test_arg is not None:
+            output_list = []
+            for m in self.mp.modules:
+                mod = self.mp.modules[m]
+                if isinstance(mod, OutputModule):
+                    output_list.append(mod)
+            self.mp.reset()
+            for i, out in enumerate(output_list):
+                try:
+                    val = out.calculate(self.test_arg)
+                    val = scale(val)
+                    cv2.imshow(str(i), cp.asnumpy(val))
+                    cv2.waitKey(1)
+                except Exception as e:
+                    print('=============')
+                    print(e)
+                    print('-------------')
+                    traceback.print_exc()
+                
     def contextMenuEvent(self, event):
         contextMenu = QMenu(self)
         actions = {}
@@ -261,6 +279,7 @@ class Builder(QMainWindow):
             self.moduleWidgets[mod] = mw
             self.reverseModuleWidgets[mw] = mod
         self.repaint()
+        self.update()
 
     def select(self, btn):
         if btn == self.selected:
@@ -279,6 +298,7 @@ class Builder(QMainWindow):
                 self.selected = btn
         #print(self.selected)
         self.repaint()
+        self.update()
 
     def reset_selection(self):
         self.selected = None
@@ -343,5 +363,6 @@ class Builder(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    ex = Builder()
+    x = create_point_grid([0, 0, 0], [0.5, 0, 0], [0.5, 1, 0], [0, 1, 0], 600, 300)
+    ex = Builder(test_arg=x)
     app.exec_()
