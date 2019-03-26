@@ -48,7 +48,7 @@ namespace NGEN {
         try {
             auto mods = dict["modules"];
             for(auto m: mods){
-                auto mod = NGEN::Module::module_table[m["type"]]->create(this);
+                auto mod = NGEN::get_module_registry()[m["type"]]->create(this);
                 mod->id = m["id"];
                 auto props = m["properties"];
                 auto inputs = m["inputs"];

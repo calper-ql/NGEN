@@ -37,7 +37,6 @@ namespace NGEN {
 
     class Module {
     public:
-        static std::map<std::string, ModuleFactory*> module_table;
         static void print_module_table();
         static void register_module(std::string s, ModuleFactory* p);
 
@@ -69,7 +68,10 @@ namespace NGEN {
         virtual Module *create(ModulePool* mp) = 0;
     };
 
+
+    std::map<std::string, ModuleFactory*> &get_module_registry();
 }
+
 
 #define NGEN_REGISTER_MODULE(klass) \
     class klass##Factory : public ModuleFactory { \

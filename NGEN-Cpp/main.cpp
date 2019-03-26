@@ -5,8 +5,9 @@ int main() {
     std::cout << "Hello, World!" << std::endl;
     NGEN::Module::print_module_table();
     auto mp = new NGEN::ModulePool();
-    auto tm = NGEN::Module::module_table["TestModule"]->create(mp);
-    auto tm2 = NGEN::Module::module_table["TestModule"]->create(mp);
+    auto table = NGEN::get_module_registry();
+    auto tm = NGEN::get_module_registry()["TestModule"]->create(mp);
+    auto tm2 = NGEN::get_module_registry()["TestModule"]->create(mp);
     tm->inputs["test_input"]->connect(tm2->outputs_list[0]);
     std::cout << tm->to_str() << std::endl;
 

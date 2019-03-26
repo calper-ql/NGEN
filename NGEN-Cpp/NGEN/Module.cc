@@ -5,18 +5,23 @@
 #include "Module.h"
 
 namespace NGEN {
-    std::map<std::string, ModuleFactory*> Module::module_table;
 
     void Module::print_module_table(){
         std::cout << "+== MODULE TABLE ==+" << std::endl;
-        for(const auto &key: module_table){
+        for(const auto &key: get_module_registry()){
             std::cout << "| " << key.first << " -> " << key.second << std::endl;
         }
         std::cout << "+==================+" << std::endl;
     }
 
+    std::map<std::string, ModuleFactory *> &get_module_registry() {
+        static std::map<std::string, ModuleFactory*> module_registry;
+        return module_registry;
+    }
+
     void Module::register_module(std::string s, ModuleFactory* p){
-        module_table[s] = p;
+        auto &ngen_module_table = get_module_registry();
+        ngen_module_table[s] = p;
     }
 
     Module::Module(ModulePool* mp) {
