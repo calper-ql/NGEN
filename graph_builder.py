@@ -1,7 +1,7 @@
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtWidgets import QApplication, QPushButton, QWidget, QLabel, QFrame, QMenuBar, QMainWindow, QMenu
 from PyQt5.QtCore import Qt, QRect, QSize, QPoint, QRectF
-from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QListWidget, QGridLayout, QSlider, QSpinBox, QRadioButton
+from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QListWidget, QGridLayout, QSlider, QSpinBox, QRadioButton, QLineEdit
 from PyQt5.QtGui import QPainter, QBrush, QPen
 from PyQt5.QtGui import QPainterPath, QRegion, QLinearGradient
 from core import module_pool_class_registry, ModulePool, Module
@@ -108,6 +108,26 @@ class IntWidget(QWidget):
         self.parent.update()
 
 register_property_widget(IntProperty, IntWidget)
+
+
+class StringWidget(QWidget):
+    def __init__(self, parent, prop, name):
+        super().__init__(parent)
+        self.parent = parent
+        self.prop = prop
+        hl = QHBoxLayout(self)
+        self.sl = QLineEdit(parent=None)
+        self.sl.setText(self.prop.get())
+        hl.addWidget(QLabel(name))
+        hl.addWidget(self.sl)
+        self.sl.textChanged.connect(self.valueHandler)
+        self.show()
+    
+    def valueHandler(self, value):
+        self.prop.value = value
+        self.parent.update()
+
+register_property_widget(StringProperty, StringWidget)
 
 class QArgPushButton(QPushButton):
     def __init__(self, text, arg):

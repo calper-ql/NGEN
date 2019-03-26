@@ -10,6 +10,7 @@ class OutputModule(Module):
     def __init__(self, mp):
         Module.__init__(self, mp)
         self.input = Input(self)
+        self.name = StringProperty()
 
     def calculate(self, arg):
         return self.input.get(arg)
@@ -61,7 +62,7 @@ register_module(SubModule)
 class PerlinModule(Module):
     def __init__(self, mp):
         Module.__init__(self, mp)
-        self.A = Output(self)
+        self.output = Output(self)
         self.seed = SeedProperty()
         self.octave = IntProperty(value=4, min=1, max=20)
         self.frequency = FloatProperty(1, 0.5, 100)
