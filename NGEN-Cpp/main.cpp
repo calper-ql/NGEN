@@ -16,10 +16,20 @@ int main() {
     i >> j;
     mp->from_json(j);
 
-
-    for(auto m: mp->modules){
-        std::cout << m.second->to_str() << std::endl;
+    NGEN::OutputModule* om;
+    for(auto pair: mp->modules){
+        std::cout << pair.second->to_str() << std::endl;
+        if(pair.second->type == "OutputModule"){
+            auto temp = (NGEN::OutputModule*) pair.second;
+            if(temp->name.value == "test_output_yolo"){
+                om = temp;
+            }
+        }
     }
+
+    auto value = om->input.calculate(1.0, 1.0, 1.0);
+    std::cout <<  value << std::endl;
+
 
     delete(mp);
     return 0;

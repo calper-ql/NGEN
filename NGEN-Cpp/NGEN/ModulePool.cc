@@ -80,6 +80,13 @@ namespace NGEN {
 
             }
             find_max();
+
+            for(auto m: modules) {
+                for(auto inp: m.second->inputs){
+                    inp.second->get_connection();
+                }
+            }
+
         } catch (std::exception &e) {
             std::cout << e.what() << std::endl;
             throw std::runtime_error("Module from json failure");

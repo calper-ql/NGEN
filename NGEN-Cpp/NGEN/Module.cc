@@ -60,7 +60,7 @@ namespace NGEN {
         calculated = false;
     }
 
-    void Module::calculate() {
+    void Module::calculate(float x, float y, float z) {
 
     }
 }

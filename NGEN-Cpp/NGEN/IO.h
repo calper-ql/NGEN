@@ -32,6 +32,7 @@ namespace NGEN {
         std::string to_str();
         void get_connection();
         void connect(Output* out);
+        float calculate(float x, float y, float z);
     };
 
 

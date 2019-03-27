@@ -237,7 +237,7 @@ def rigged_multi(func, icp, seed, octaves, frequency=1.0, lacunarity=2.0, exp=-1
         d_freq *= lacunarity
 
     for i in range(octaves):
-        seed = (seed + i) & 0x7fffffff
+        #seed = (seed + i) & 0x7fffffff
 
         signal = func(icp_f, seed)
 

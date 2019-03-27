@@ -103,7 +103,7 @@ class IntWidget(QWidget):
 
     def valueHandler(self, value):
         p = self.prop
-        p.value = int(interp(value, [1, 100], [p.min, p.max]))
+        p.value = value
         self.val_button.setText(str(p.value))
         self.parent.update()
 

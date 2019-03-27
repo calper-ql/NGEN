@@ -56,7 +56,7 @@ namespace NGEN {
         Module(ModulePool* mp);
         virtual ~Module();
 
-        virtual void calculate();
+        virtual void calculate(float x, float y, float z);
 
         std::string to_str();
 

@@ -82,12 +82,12 @@ register_module(PerlinModule)
 class RiggedMultiModule(Module):
     def __init__(self, mp):
         Module.__init__(self, mp)
-        self.A = Output(self)
+        self.output = Output(self)
         self.seed = SeedProperty()
         self.octave = IntProperty(4, 1, 20)
         self.frequency = FloatProperty(1, 0.5, 100)
         self.lacunarity = FloatProperty(2.0, 1.0, 3.0)
-        self.exp = FloatProperty(-1.0, 0.0, -3.0)
+        self.exp = FloatProperty(-3.0, 0.0, -3.0)
         self.offset = FloatProperty(0.0, -3.0, 3.0)
 
     def calculate(self, arg):
@@ -108,9 +108,9 @@ class SelectModule(Module):
         self.A = Input(self)
         self.B = Input(self)
         self.output = Output(self)
-        self.bound = FloatProperty(0, -1.0, 1.0)
-        self.falloff = FloatProperty(0.0, -1.0, 1.0)
-        self.cutoff = FloatProperty(0.0, -1.0, 1.0)
+        self.bound = FloatProperty(0, -3.0, 3.0)
+        self.falloff = FloatProperty(0.0, -3.0, 3.0)
+        self.cutoff = FloatProperty(0.0, -3.0, 3.0)
 
     def calculate(self, arg):
         ctrl = self.control.get(arg) - self.cutoff.get()

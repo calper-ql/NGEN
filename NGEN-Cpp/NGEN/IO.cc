@@ -55,4 +55,9 @@ namespace NGEN {
         output_id = connection->id;
     }
 
+    float Input::calculate(float x, float y, float z) {
+        connection->module->calculate(x, y, z);
+        return connection->stored_value;
+    }
+
 }
