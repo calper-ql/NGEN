@@ -9,26 +9,13 @@
 #include <random>
 
 namespace NGEN::Noise {
+
     class PerlinNoise {
     public:
-        unsigned seed;
-        std::default_random_engine gen;
-        std::uniform_real_distribution<double> dist;
-
-        std::vector<uint8_t> p;
-
         explicit PerlinNoise();
 
-        explicit PerlinNoise(unsigned seed);
-
-        double lerp(double a0, double a1, double w);
-
-        double smooth_step(double a0, double a1, double w);
-
-        double clamp(double x, double ll, double ul);
-
         // expects a normalized value from 0 to 1 for each dim
-        double noise(double x, double y, double z);
+        double noise(unsigned seed, double x, double y, double z);
     };
 
     class VoronoiNoise {

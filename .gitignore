@@ -120,6 +120,7 @@ dmypy.json
 
 # VS CODE
 .vs
+.vscode
 
 # CPP
 NGEN-Cpp/*build*

@@ -1,0 +1,488 @@
+{
+    "modules": [
+        {
+            "id": 0,
+            "inputs": [
+                {
+                    "module": 1,
+                    "name": "input",
+                    "output_id": 0
+                }
+            ],
+            "outputs": 0,
+            "properties": {
+                "name": {
+                    "type": "StringProperty",
+                    "value": "vertex"
+                }
+            },
+            "type": "OutputModule"
+        },
+        {
+            "id": 1,
+            "inputs": [
+                {
+                    "module": 19,
+                    "name": "control",
+                    "output_id": 0
+                },
+                {
+                    "module": 9,
+                    "name": "A",
+                    "output_id": 0
+                },
+                {
+                    "module": 7,
+                    "name": "B",
+                    "output_id": 0
+                }
+            ],
+            "outputs": 1,
+            "properties": {
+                "falloff": {
+                    "max": 0.9,
+                    "min": 0.001,
+                    "type": "FloatProperty",
+                    "value": 0.09180808080808081
+                },
+                "high_bound": {
+                    "max": 3.0,
+                    "min": -3.0,
+                    "type": "FloatProperty",
+                    "value": 2.5151515151515156
+                },
+                "low_bound": {
+                    "max": 3.0,
+                    "min": -3.0,
+                    "type": "FloatProperty",
+                    "value": -0.15151515151515138
+                }
+            },
+            "type": "SelectModule"
+        },
+        {
+            "id": 2,
+            "inputs": [],
+            "outputs": 1,
+            "properties": {
+                "frequency": {
+                    "max": 100,
+                    "min": 0.5,
+                    "type": "FloatProperty",
+                    "value": 2.51010101010101
+                },
+                "lacunarity": {
+                    "max": 3.0,
+                    "min": 1.0,
+                    "type": "FloatProperty",
+                    "value": 2.0
+                },
+                "octave": {
+                    "max": 20,
+                    "min": 1,
+                    "type": "IntProperty",
+                    "value": 5
+                },
+                "persistance": {
+                    "max": 0.999,
+                    "min": 0.001,
+                    "type": "FloatProperty",
+                    "value": 0.5
+                },
+                "seed": {
+                    "type": "SeedProperty",
+                    "value": 45
+                }
+            },
+            "type": "PerlinModule"
+        },
+        {
+            "id": 3,
+            "inputs": [],
+            "outputs": 1,
+            "properties": {
+                "exp": {
+                    "max": -3.0,
+                    "min": 0.0,
+                    "type": "FloatProperty",
+                    "value": -0.09090909090909091
+                },
+                "frequency": {
+                    "max": 100,
+                    "min": 0.5,
+                    "type": "FloatProperty",
+                    "value": 12.560606060606059
+                },
+                "lacunarity": {
+                    "max": 3.0,
+                    "min": 1.0,
+                    "type": "FloatProperty",
+                    "value": 1.3434343434343434
+                },
+                "octave": {
+                    "max": 20,
+                    "min": 1,
+                    "type": "IntProperty",
+                    "value": 4
+                },
+                "offset": {
+                    "max": 3.0,
+                    "min": -3.0,
+                    "type": "FloatProperty",
+                    "value": -1.8484848484848484
+                },
+                "seed": {
+                    "type": "SeedProperty",
+                    "value": 42
+                }
+            },
+            "type": "RiggedMultiModule"
+        },
+        {
+            "id": 4,
+            "inputs": [],
+            "outputs": 1,
+            "properties": {
+                "frequency": {
+                    "max": 100,
+                    "min": 0.5,
+                    "type": "FloatProperty",
+                    "value": 25.626262626262623
+                },
+                "lacunarity": {
+                    "max": 3.0,
+                    "min": 1.0,
+                    "type": "FloatProperty",
+                    "value": 1.787878787878788
+                },
+                "octave": {
+                    "max": 20,
+                    "min": 1,
+                    "type": "IntProperty",
+                    "value": 8
+                },
+                "persistance": {
+                    "max": 0.999,
+                    "min": 0.001,
+                    "type": "FloatProperty",
+                    "value": 0.6663333333333333
+                },
+                "seed": {
+                    "type": "SeedProperty",
+                    "value": 46
+                }
+            },
+            "type": "PerlinModule"
+        },
+        {
+            "id": 5,
+            "inputs": [
+                {
+                    "module": 7,
+                    "name": "input",
+                    "output_id": 0
+                }
+            ],
+            "outputs": 0,
+            "properties": {
+                "name": {
+                    "type": "StringProperty",
+                    "value": "control"
+                }
+            },
+            "type": "OutputModule"
+        },
+        {
+            "id": 6,
+            "inputs": [],
+            "outputs": 1,
+            "properties": {
+                "value": {
+                    "max": 1.0,
+                    "min": -1.0,
+                    "type": "FloatProperty",
+                    "value": 0.11111111111111116
+                }
+            },
+            "type": "ConstantModule"
+        },
+        {
+            "id": 7,
+            "inputs": [
+                {
+                    "module": 6,
+                    "name": "A",
+                    "output_id": 0
+                },
+                {
+                    "module": 18,
+                    "name": "B",
+                    "output_id": 0
+                }
+            ],
+            "outputs": 1,
+            "properties": {},
+            "type": "MultiplyModule"
+        },
+        {
+            "id": 8,
+            "inputs": [
+                {
+                    "module": 11,
+                    "name": "R",
+                    "output_id": 0
+                },
+                {
+                    "module": 11,
+                    "name": "G",
+                    "output_id": 0
+                },
+                {
+                    "module": 13,
+                    "name": "B",
+                    "output_id": 0
+                }
+            ],
+            "outputs": 0,
+            "properties": {
+                "b_mult": {
+                    "max": 1.0,
+                    "min": 0.0,
+                    "type": "FloatProperty",
+                    "value": 0.48484848484848486
+                },
+                "g_mult": {
+                    "max": 1.0,
+                    "min": 0.0,
+                    "type": "FloatProperty",
+                    "value": 0.22222222222222224
+                },
+                "name": {
+                    "type": "StringProperty",
+                    "value": "rgb"
+                },
+                "r_mult": {
+                    "max": 1.0,
+                    "min": 0.0,
+                    "type": "FloatProperty",
+                    "value": 0.4040404040404041
+                }
+            },
+            "type": "RGBOutputModule"
+        },
+        {
+            "id": 9,
+            "inputs": [
+                {
+                    "module": 4,
+                    "name": "A",
+                    "output_id": 0
+                },
+                {
+                    "module": 10,
+                    "name": "B",
+                    "output_id": 0
+                }
+            ],
+            "outputs": 1,
+            "properties": {},
+            "type": "AddModule"
+        },
+        {
+            "id": 10,
+            "inputs": [],
+            "outputs": 1,
+            "properties": {
+                "value": {
+                    "max": 1.0,
+                    "min": -1.0,
+                    "type": "FloatProperty",
+                    "value": 1.0
+                }
+            },
+            "type": "ConstantModule"
+        },
+        {
+            "id": 11,
+            "inputs": [
+                {
+                    "module": 1,
+                    "name": "A",
+                    "output_id": 0
+                },
+                {
+                    "module": 12,
+                    "name": "B",
+                    "output_id": 0
+                }
+            ],
+            "outputs": 1,
+            "properties": {},
+            "type": "AddModule"
+        },
+        {
+            "id": 12,
+            "inputs": [],
+            "outputs": 1,
+            "properties": {
+                "value": {
+                    "max": 1.0,
+                    "min": -1.0,
+                    "type": "FloatProperty",
+                    "value": 0.49494949494949503
+                }
+            },
+            "type": "ConstantModule"
+        },
+        {
+            "id": 13,
+            "inputs": [
+                {
+                    "module": 15,
+                    "name": "A",
+                    "output_id": 0
+                },
+                {
+                    "module": 14,
+                    "name": "B",
+                    "output_id": 0
+                }
+            ],
+            "outputs": 1,
+            "properties": {},
+            "type": "AddModule"
+        },
+        {
+            "id": 14,
+            "inputs": [],
+            "outputs": 1,
+            "properties": {
+                "value": {
+                    "max": 1.0,
+                    "min": -1.0,
+                    "type": "FloatProperty",
+                    "value": 0.49494949494949503
+                }
+            },
+            "type": "ConstantModule"
+        },
+        {
+            "id": 15,
+            "inputs": [
+                {
+                    "module": 17,
+                    "name": "A",
+                    "output_id": 0
+                },
+                {
+                    "module": 16,
+                    "name": "B",
+                    "output_id": 0
+                }
+            ],
+            "outputs": 1,
+            "properties": {},
+            "type": "MultiplyModule"
+        },
+        {
+            "id": 16,
+            "inputs": [],
+            "outputs": 1,
+            "properties": {
+                "value": {
+                    "max": 1.0,
+                    "min": -1.0,
+                    "type": "FloatProperty",
+                    "value": 0.6363636363636365
+                }
+            },
+            "type": "ConstantModule"
+        },
+        {
+            "id": 17,
+            "inputs": [
+                {
+                    "module": 2,
+                    "name": "A",
+                    "output_id": 0
+                },
+                {
+                    "module": 7,
+                    "name": "B",
+                    "output_id": 0
+                }
+            ],
+            "outputs": 1,
+            "properties": {},
+            "type": "MultiplyModule"
+        },
+        {
+            "id": 18,
+            "inputs": [],
+            "outputs": 1,
+            "properties": {
+                "frequency": {
+                    "max": 100,
+                    "min": 0.5,
+                    "type": "FloatProperty",
+                    "value": 78.89393939393939
+                },
+                "lacunarity": {
+                    "max": 3.0,
+                    "min": 1.0,
+                    "type": "FloatProperty",
+                    "value": 1.7070707070707072
+                },
+                "octave": {
+                    "max": 20,
+                    "min": 1,
+                    "type": "IntProperty",
+                    "value": 8
+                },
+                "persistance": {
+                    "max": 0.999,
+                    "min": 0.001,
+                    "type": "FloatProperty",
+                    "value": 0.7873030303030303
+                },
+                "seed": {
+                    "type": "SeedProperty",
+                    "value": 51
+                }
+            },
+            "type": "PerlinModule"
+        },
+        {
+            "id": 19,
+            "inputs": [
+                {
+                    "module": 20,
+                    "name": "A",
+                    "output_id": 0
+                },
+                {
+                    "module": 2,
+                    "name": "B",
+                    "output_id": 0
+                }
+            ],
+            "outputs": 1,
+            "properties": {},
+            "type": "MultiplyModule"
+        },
+        {
+            "id": 20,
+            "inputs": [],
+            "outputs": 1,
+            "properties": {
+                "value": {
+                    "max": 1.0,
+                    "min": -1.0,
+                    "type": "FloatProperty",
+                    "value": 0.5757575757575759
+                }
+            },
+            "type": "ConstantModule"
+        }
+    ]
+}
