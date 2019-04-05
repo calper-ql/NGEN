@@ -386,8 +386,14 @@ class Builder(QMainWindow):
             print()
             bt_d = json.dumps(self.mp.to_json())
             td_d = json.loads(bt_d)
+            m_pos = {}
+            for m in self.moduleWidgets:
+                m_index = m.id
+                pos = self.moduleWidgets[m].pos()
+                m_pos[i] = [pos.x(), pos.y()]
+            td_d["module_pos"] = m_pos
             json_d = json.dumps(td_d, indent=4, sort_keys=True)
-            print(json_d)
+            print(json_d) 
             with open("test_graph.json", "w") as text_file:
                 print(json_d, file=text_file)
 
