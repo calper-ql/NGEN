@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(NGEN VERSION 1.0.0 LANGUAGES CXX)
 
-add_library(NGEN SHARED src/IO.cc src/Module.cc src/ModulePool.cc src/noise.cc src/Property.cc)
+add_library(NGEN SHARED src/IO.cc src/Module.cc src/ModulePool.cc src/noise.cc src/Property.cc include/NGEN/ngen.h)
 
 target_include_directories(NGEN
         PUBLIC

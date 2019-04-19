@@ -123,5 +123,7 @@ dmypy.json
 .vscode
 
 # CPP
+NGEN-Cpp/cmake-build-debug
+NGEN-Cpp/cmake-build-release
 NGEN-Cpp/*build*
 NGEN-Cpp/.idea
