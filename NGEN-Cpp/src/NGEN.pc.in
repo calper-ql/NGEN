@@ -1,0 +1,8 @@
+includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
+libdir=@CMAKE_INSTALL_FULL_LIBDIR@
+
+Name: NGEN
+Description: Moduler procedural generation library.
+Version: @PROJECT_VERSION@
+Libs: -lNGEN
+Cflags: -I${includedir}

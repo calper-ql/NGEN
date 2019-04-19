@@ -1,5 +1,5 @@
 #include <iostream>
-#include "NGEN/SimpleModules.h"
+#include "include/NGEN/SimpleModules.h"
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
