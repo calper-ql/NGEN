@@ -61,4 +61,4 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/src/NGEN.pc"
 export(EXPORT NGEN-targets FILE ${CMAKE_CURRENT_BINARY_DIR}/NGENTargets.cmake NAMESPACE NGEN::)
 export(PACKAGE NGEN)
 
-
+add_subdirectory(test)

@@ -1,5 +1,5 @@
 #include <iostream>
-#include "include/NGEN/SimpleModules.h"
+#include "NGEN/SimpleModules.h"
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
@@ -16,7 +16,7 @@ int main() {
     i >> j;
     mp->from_json(j);
 
-    NGEN::OutputModule* om;
+    NGEN::OutputModule* om = nullptr;
     for(auto pair: mp->modules){
         std::cout << pair.second->to_str() << std::endl;
         if(pair.second->type == "OutputModule"){
@@ -27,9 +27,10 @@ int main() {
         }
     }
 
-    auto value = om->input.calculate(1.0, 1.0, 1.0);
-    std::cout <<  value << std::endl;
-
+    if(om){
+        auto value = om->input.calculate(1.0, 1.0, 1.0);
+        std::cout <<  value << std::endl;
+    }
 
     delete(mp);
     return 0;
