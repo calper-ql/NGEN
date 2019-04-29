@@ -1,0 +1,124 @@
+{
+    "module_pos": {
+        "599": [
+            148,
+            644
+        ]
+    },
+    "modules": [
+        {
+            "id": 0,
+            "inputs": [
+                {
+                    "module": 2,
+                    "name": "input",
+                    "output_id": 0
+                }
+            ],
+            "outputs": 0,
+            "properties": {
+                "name": {
+                    "type": "StringProperty",
+                    "value": "default"
+                }
+            },
+            "type": "OutputModule"
+        },
+        {
+            "id": 1,
+            "inputs": [
+                {
+                    "module": 2,
+                    "name": "R",
+                    "output_id": 0
+                },
+                {
+                    "module": 2,
+                    "name": "G",
+                    "output_id": 0
+                },
+                {
+                    "module": 2,
+                    "name": "B",
+                    "output_id": 0
+                }
+            ],
+            "outputs": 0,
+            "properties": {
+                "b_mult": {
+                    "max": 1.0,
+                    "min": 0.0,
+                    "type": "FloatProperty",
+                    "value": 1.0
+                },
+                "g_mult": {
+                    "max": 1.0,
+                    "min": 0.0,
+                    "type": "FloatProperty",
+                    "value": 1.0
+                },
+                "name": {
+                    "type": "StringProperty",
+                    "value": "default"
+                },
+                "r_mult": {
+                    "max": 1.0,
+                    "min": 0.0,
+                    "type": "FloatProperty",
+                    "value": 1.0
+                }
+            },
+            "type": "RGBOutputModule"
+        },
+        {
+            "id": 2,
+            "inputs": [],
+            "outputs": 1,
+            "properties": {
+                "frequency": {
+                    "max": 100,
+                    "min": 0.5,
+                    "type": "FloatProperty",
+                    "value": 1
+                },
+                "lacunarity": {
+                    "max": 3.0,
+                    "min": 1.0,
+                    "type": "FloatProperty",
+                    "value": 2.0
+                },
+                "octave": {
+                    "max": 20,
+                    "min": 1,
+                    "type": "IntProperty",
+                    "value": 4
+                },
+                "persistance": {
+                    "max": 0.999,
+                    "min": 0.001,
+                    "type": "FloatProperty",
+                    "value": 0.5
+                },
+                "seed": {
+                    "type": "SeedProperty",
+                    "value": 42
+                }
+            },
+            "type": "PerlinModule"
+        },
+        {
+            "id": 3,
+            "inputs": [],
+            "outputs": 1,
+            "properties": {
+                "value": {
+                    "max": 1.0,
+                    "min": -1.0,
+                    "type": "FloatProperty",
+                    "value": 1.0
+                }
+            },
+            "type": "ConstantModule"
+        }
+    ]
+}

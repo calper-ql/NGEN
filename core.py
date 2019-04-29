@@ -32,7 +32,7 @@ class ModulePool:
     def find_max(self):
         self.id_counter = 0
         for m in self.modules:
-            if self.modules[m].id > self.id_counter:
+            if self.modules[m].id >= self.id_counter:
                 self.id_counter = self.modules[m].id + 1
 
     def to_json(self):
@@ -73,9 +73,10 @@ class ModulePool:
         for i in range(len(inps)):
             mod.inputs[i].connect_idx(inps[i]["module"], inps[i]["output_id"])
 
-        for key in json_d:
-            prop = property_class_registry[json_d[key]['type']]()
-            prop.from_json(json_d[key])
+        props = json_d["properties"]
+        for key in props:
+            prop = property_class_registry[props[key]['type']]()
+            prop.from_json(props[key])
             if hasattr(mod, key):
                 setattr(mod, key, prop)
 
@@ -97,11 +98,13 @@ class Module:
     def to_json(self):
         d = self.__dict__
         n = {}
+        props = {}
         for key in d:
             if isinstance(d[key], Property):
-                n[key] = d[key].to_json()
+                props[key] = d[key].to_json()
             elif key == 'id':
                 n[key] = d[key]
+        n['properties'] = props
         ins = []
         for inp in self.inputs:
             ins.append(inp.to_json())
@@ -236,6 +239,15 @@ class Property:
         del json_d['type']
         for key in json_d:
             setattr(self, key, json_d[key])
+
+class StringProperty(Property):
+    def __init__(self, value='default'):
+        self.value = value
+
+    def get(self):
+        return self.value
+
+register_property(StringProperty)
 
 class BoolProperty(Property):
     def __init__(self, value=False):

@@ -1,7 +1,7 @@
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtWidgets import QApplication, QPushButton, QWidget, QLabel, QFrame, QMenuBar, QMainWindow, QMenu
 from PyQt5.QtCore import Qt, QRect, QSize, QPoint, QRectF
-from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QListWidget, QGridLayout, QSlider, QSpinBox, QRadioButton
+from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QListWidget, QGridLayout, QSlider, QSpinBox, QRadioButton, QLineEdit
 from PyQt5.QtGui import QPainter, QBrush, QPen
 from PyQt5.QtGui import QPainterPath, QRegion, QLinearGradient
 from core import module_pool_class_registry, ModulePool, Module
@@ -103,11 +103,31 @@ class IntWidget(QWidget):
 
     def valueHandler(self, value):
         p = self.prop
-        p.value = int(interp(value, [1, 100], [p.min, p.max]))
+        p.value = value
         self.val_button.setText(str(p.value))
         self.parent.update()
 
 register_property_widget(IntProperty, IntWidget)
+
+
+class StringWidget(QWidget):
+    def __init__(self, parent, prop, name):
+        super().__init__(parent)
+        self.parent = parent
+        self.prop = prop
+        hl = QHBoxLayout(self)
+        self.sl = QLineEdit(parent=None)
+        self.sl.setText(self.prop.get())
+        hl.addWidget(QLabel(name))
+        hl.addWidget(self.sl)
+        self.sl.textChanged.connect(self.valueHandler)
+        self.show()
+    
+    def valueHandler(self, value):
+        self.prop.value = value
+        self.parent.update()
+
+register_property_widget(StringProperty, StringWidget)
 
 class QArgPushButton(QPushButton):
     def __init__(self, text, arg):
@@ -245,6 +265,7 @@ class Builder(QMainWindow):
         self.moduleWidgets = {}
         self.reverseModuleWidgets = {}
         self.reset_selection()
+        self.last_pos = None
 
     def update(self):
         #print('value changed')
@@ -252,15 +273,23 @@ class Builder(QMainWindow):
             output_list = []
             for m in self.mp.modules:
                 mod = self.mp.modules[m]
-                if isinstance(mod, OutputModule):
+                if isinstance(mod, OutputModule) or isinstance(mod, RGBOutputModule):
                     output_list.append(mod)
             self.mp.reset()
             for i, out in enumerate(output_list):
                 try:
                     val = out.calculate(self.test_arg)
-                    val = scale(val)
-                    cv2.imshow(str(i), cp.asnumpy(val))
-                    cv2.waitKey(1)
+                    if len(val) == 3:
+                        temp = cp.repeat(cp.expand_dims(val[2], axis=-1), 3, axis=-1)
+                        temp[..., 1] = val[1]
+                        temp[..., 2] = val[0]
+                        val = temp
+                        cv2.imshow(str(i), cp.asnumpy(val))
+                        cv2.waitKey(1)
+                    else:
+                        val = scale(val)
+                        cv2.imshow(str(i), cp.asnumpy(val))
+                        cv2.waitKey(1)
                 except Exception as e:
                     print('=============')
                     print(e)
@@ -351,18 +380,89 @@ class Builder(QMainWindow):
                             btn.size().height()/2.0)
                 qp.drawEllipse(pos.x(), pos.y()-7, 15, 15)
 
-    def mousePressEvent(self, event):
-        if event.button() == QtCore.Qt.MiddleButton:
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_P:
             print()
             print()
             bt_d = json.dumps(self.mp.to_json())
             td_d = json.loads(bt_d)
+            m_pos = {}
+            for m in self.moduleWidgets:
+                m_index = m.id
+                pos = self.moduleWidgets[m].pos()
+                m_pos[i] = [pos.x(), pos.y()]
+            td_d["module_pos"] = m_pos
             json_d = json.dumps(td_d, indent=4, sort_keys=True)
-            print(json_d)
+            print(json_d) 
+            with open("test_graph.json", "w") as text_file:
+                print(json_d, file=text_file)
 
+        if event.key() == QtCore.Qt.Key_C:
+            pos = QPoint()
+            count = 0
+            for mw in self.reverseModuleWidgets:
+                pos += mw.pos()
+                count += 1
+            diff = pos / count
+            diff -= QPoint(self.width()//2, self.height()//2)
+            for mw in self.reverseModuleWidgets:
+                mw.move(mw.pos() - diff)
+            self.repaint()
+
+            
+
+    def mouseMoveEvent(self, event):
+        pos = event.globalPos()
+        if event.buttons() == QtCore.Qt.MiddleButton:
+            print("---------")
+            if self.last_pos is None:
+                self.last_pos = pos
+            else:
+                for mw in self.reverseModuleWidgets:
+                    diff = pos - self.last_pos
+                    if diff.x() <= 100 and diff.x() >= -100 and diff.y() <= 100 and diff.y() >= -100:
+                        mw.move(mw.pos() + diff)
+                        print(mw.pos(), " - ", diff)
+                self.last_pos = pos
+            self.repaint()
+        else:
+            self.last_pos = None
+
+def _generate_rotation_matrix(axis, angle):
+    c = np.cos(angle)
+    s = np.sin(angle)
+    if(axis == 'x'):
+        return np.array([[1, 0, 0],
+                         [0, c, -s],
+                         [0, s, c]], dtype=np.float32)
+    elif(axis == 'y'):
+        return np.array([[c, 0, s],
+                         [0, 1, 0],
+                         [-s, 0, c]], dtype=np.float32)
+
+    elif(axis == 'z'):
+        return np.array([[c, -s, 0],
+                         [s, c, 0],
+                         [0, 0, 1]], dtype=np.float32)
+
+    else:
+        return np.array([[1, 0, 0],
+                         [0, 1, 0],
+                         [0, 0, 1]], dtype=np.float32)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    x = create_point_grid([0, 0, 0], [ 1, 0.5, 0], [ 1, 0.5, 0], [0, 1, 0], 600, 1200)
+    #x = create_point_grid([0, 0, 0], [ 1, 0.5, 0], [ 1, 0.5, 0], [0, 1, 0], 600, 1200)
+    w = 300
+    h = 600
+    x = np.zeros([w, h, 3])
+    for i in range(h):
+        for j in range(w):
+            vec = np.array([1, 0, 0])
+            rot = _generate_rotation_matrix('x', np.pi*(i/w))
+            rot = np.dot(rot, _generate_rotation_matrix('y', np.pi*(j/w)))
+            x[j, i, :] = 1 + np.dot(rot, vec)/2.0
+    x = cp.array(x)
+    
     ex = Builder(test_arg=x)
     app.exec_()
