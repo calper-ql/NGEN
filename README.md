@@ -19,8 +19,6 @@ Also some basic properties:
 * IntProperty
 * FloatProperty
 
-(Following capture is from an early development phase and will be updated when full functionality is implemented)
-
 ## Computation Graph
 ![Imgur](https://i.imgur.com/GP6Dx6V.png)
 ## Result
