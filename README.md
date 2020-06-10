@@ -104,7 +104,7 @@ The computation library used for this project is
 [CuPy](https://cupy.chainer.org/) 
 ![Cupy](https://raw.githubusercontent.com/cupy/cupy/master/docs/image/cupy_logo_1000px.png)
 However this can be quickly swapped with regular 
-[numpy](http://www.numpy.org/). How to do so will be explained soon.
+[numpy](http://www.numpy.org/).
 
 # UI
 NGEN can be extended both in core level and UI however the Module definitions can already be rendered without additional code ([Computation Graph](https://i.imgur.com/GP6Dx6V.png))
